@@ -463,9 +463,9 @@
                         type: "LiveStream",
                         target: document.querySelector('#interactive'),
                         constraints: {
-                            width: { min: 1280 },
-                            height: { min: 720 },
-                            facingMode: "environment", // Use rear camera
+                            width: { min: 640 },
+                            height: { min: 480 },
+                            facingMode: "environment",
                             aspectRatio: { min: 1, max: 2 }
                         },
                     },
@@ -474,19 +474,34 @@
                         patchSize: "medium",
                         halfSample: true
                     },
-                    numOfWorkers: 4,
-                    frequency: 10,
+                    numOfWorkers: 2, // Reduced for better performance on mobile
+                    frequency: 5,    // Process fewer frames for better accuracy
                     decoder: {
                         readers: [
-                            "ean_reader",
-                            "ean_8_reader",
-                            "code_128_reader",
-                            "code_39_reader",
-                            "code_39_vin_reader",
-                            "codabar_reader",
-                            "upc_reader",
-                            "upc_e_reader",
-                            "i2of5_reader"
+                            {
+                                format: "ean_reader",
+                                config: {
+                                    supplements: [
+                                        'ean_5_reader', 'ean_2_reader'
+                                    ]
+                                }
+                            },
+                            {
+                                format: "ean_8_reader",
+                                config: {}
+                            },
+                            {
+                                format: "code_128_reader",
+                                config: {}
+                            },
+                            {
+                                format: "code_39_reader",
+                                config: {}
+                            },
+                            {
+                                format: "upc_reader",
+                                config: {}
+                            }
                         ],
                         multiple: false
                     },
@@ -497,10 +512,10 @@
                         showPattern: false
                     },
                     area: {
-                        top: "30%",
-                        right: "15%",
-                        left: "15%",
-                        bottom: "30%"
+                        top: "35%",     // Narrowed scan area for better focus
+                        right: "20%",
+                        left: "20%",
+                        bottom: "35%"
                     }
                 }, function(err) {
                     if (err) {
@@ -531,8 +546,8 @@
                         return;
                     }
                     
-                    // Check confidence level
-                    if (result.codeResult.confidence < 0.90) {
+                    // Check confidence level - increased threshold
+                    if (result.codeResult.confidence < 0.95) {  // Higher confidence threshold
                         console.log("Low confidence scan:", result.codeResult.confidence);
                         $('#scan-status').text('Low confidence. Try again.');
                         return;
@@ -718,13 +733,18 @@
                     console.log("Beep failed:", e);
                 }
             }
-            // Delete card when X button is clicked
+            // Ensure this is at the document level for proper delegation
             $(document).on('click', '.delete-button', function(e) {
-                console.log('Delete button clicked');
-                e.stopPropagation();  // Prevent event bubbling
+                e.preventDefault();
+                e.stopPropagation();
                 
                 const card = $(this).closest('.barcode-card');
                 const barcode = card.data('barcode');
+                
+                // Immediate visual feedback that the button was pressed
+                $(this).css('background-color', '#ff3b30');
+                $(this).css('color', 'white');
+                
                 const index = scannedBarcodes.findIndex(item => item.barcode === barcode);
                 
                 if (index !== -1) {
@@ -732,13 +752,8 @@
                     scannedBarcodes.splice(index, 1);
                     
                     // Animate card removal
-                    card.animate({
-                        opacity: 0,
-                        height: 0,
-                        margin: 0,
-                        padding: 0
-                    }, 300, function() {
-                        card.remove();
+                    card.fadeOut(300, function() {
+                        $(this).remove();
                         
                         // Show empty state if no barcodes left
                         if (scannedBarcodes.length === 0) {
