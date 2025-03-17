@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Barcode Scanner App</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
     <style>
         /* Reset and base styles */
         * {
@@ -135,80 +136,109 @@
             font-style: italic;
         }
 
-        /* Modal for camera viewer */
-        .modal {
-            display: none;
+        /* Scanner container */
+        .scanner-container {
             position: fixed;
-            z-index: 1000;
-            left: 0;
             top: 0;
+            left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
+            background-color: rgba(0, 0, 0, 0.9);
+            z-index: 1000;
+            display: none;
         }
 
-        .modal-content {
-            background-color: #fefefe;
-            margin: 15% auto;
-            padding: 0;
-            border-radius: 10px;
-            width: 90%;
-            max-width: 600px;
-            overflow: hidden;
-        }
-
-        .modal-header {
-            padding: 10px 15px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background-color: #f8f9fa;
-            border-radius: 10px 10px 0 0;
-        }
-
-        .close {
-            color: #aaa;
-            font-size: 28px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-
-        .close:hover {
-            color: black;
-        }
-
-        .modal-body {
-            padding: 0;
-        }
-
-        .modal-footer {
-            padding: 15px;
-            text-align: center;
-            background-color: #f8f9fa;
-        }
-        
-        #camera-preview {
+        #interactive {
+            position: relative;
             width: 100%;
-            height: 300px;
-            object-fit: cover;
-            background-color: #000;
+            height: 100%;
         }
-        
-        .capture-button {
-            display: inline-block;
-            padding: 12px 25px;
-            background-color: #3498db;
+
+        #interactive canvas, #interactive video {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .scanner-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1001;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            pointer-events: none;
+        }
+
+        .scanner-header {
+            padding: 20px;
+            display: flex;
+            justify-content: flex-end;
+            pointer-events: auto;
+        }
+
+        .scanner-footer {
+            padding: 20px;
+            text-align: center;
             color: white;
+            background-image: linear-gradient(to top, rgba(0,0,0,0.7), transparent);
+        }
+
+        .scan-region {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 70%;
+            height: 20%;
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            border-radius: 10px;
+            pointer-events: none;
+        }
+
+        .close-scanner {
+            background-color: rgba(255, 255, 255, 0.2);
             border: none;
-            border-radius: 25px;
-            font-size: 16px;
-            font-weight: bold;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            color: white;
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             cursor: pointer;
             transition: background-color 0.3s;
         }
-        
-        .capture-button:hover {
-            background-color: #2980b9;
+
+        .close-scanner:hover {
+            background-color: rgba(255, 255, 255, 0.3);
+        }
+
+        #scan-status {
+            margin-top: 10px;
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        /* Toast notification */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 25px;
+            font-size: 14px;
+            z-index: 2000;
+            display: none;
         }
         
         @media (max-width: 768px) {
@@ -231,11 +261,6 @@
             body {
                 padding: 0;
             }
-
-            .modal-content {
-                width: 95%;
-                margin: 30% auto;
-            }
             
             .button {
                 padding: 12px 10px;
@@ -244,6 +269,10 @@
             
             .button svg {
                 margin-right: 5px !important;
+            }
+
+            .scan-region {
+                width: 90%;
             }
         }
     </style>
@@ -289,53 +318,39 @@
         </div>
     </div>
 
-    <!-- Camera Modal -->
-    <div id="camera-modal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>Scan Barcode</h3>
-                <span class="close" id="close-camera">&times;</span>
+    <!-- Scanner Container -->
+    <div class="scanner-container" id="scanner-container">
+        <div id="interactive" class="viewport"></div>
+        <div class="scanner-overlay">
+            <div class="scanner-header">
+                <button class="close-scanner" id="close-scanner">&times;</button>
             </div>
-            <div class="modal-body">
-                <video id="camera-preview" autoplay playsinline></video>
-            </div>
-            <div class="modal-footer">
-                <button id="capture-barcode" class="capture-button">Capture</button>
-                <p style="margin-top:10px; font-size:14px; color:#6c757d;">Position the barcode in the center of the screen</p>
+            <div class="scan-region"></div>
+            <div class="scanner-footer">
+                <div>Position barcode within the frame</div>
+                <div id="scan-status">Scanning...</div>
             </div>
         </div>
     </div>
 
+    <!-- Toast notification -->
+    <div class="toast" id="toast">Barcode detected!</div>
+
     <script>
         $(document).ready(function() {
             let scannedBarcodes = [];
-            const cameraModal = document.getElementById("camera-modal");
-            const closeBtn = document.getElementById("close-camera");
-            let cameraStream = null;
+            let scannerInitialized = false;
+            let lastScannedCode = '';
+            let scanTimeout;
             
             // Camera button clicked
             $('#camera-button').on('click', function() {
-                // Try to access camera
-                navigator.mediaDevices.getUserMedia({ 
-                    video: { 
-                        facingMode: "environment",
-                        width: { ideal: 1280 },
-                        height: { ideal: 720 }
-                    } 
-                })
-                .then(function(stream) {
-                    cameraStream = stream;
-                    const video = document.getElementById('camera-preview');
-                    video.srcObject = stream;
-                    cameraModal.style.display = "block";
-                })
-                .catch(function(err) {
-                    console.error("Camera error:", err);
-                    alert("Could not access camera. Please ensure camera permissions are granted and try again.");
-                    
-                    // Fall back to manual entry
-                    promptManualEntry();
-                });
+                $('#scanner-container').show();
+                
+                // Set status
+                $('#scan-status').text('Initializing camera...');
+                
+                startScanner();
             });
             
             // Manual entry button clicked
@@ -343,47 +358,126 @@
                 promptManualEntry();
             });
             
-            // Close camera modal
-            closeBtn.onclick = function() {
-                stopCamera();
-                cameraModal.style.display = "none";
-            };
-            
-            // Close modal when clicking outside
-            window.onclick = function(event) {
-                if (event.target == cameraModal) {
-                    stopCamera();
-                    cameraModal.style.display = "none";
-                }
-            };
-            
-            // Capture barcode button (simulating a real scan)
-            $('#capture-barcode').on('click', function() {
-                // In a real app with barcode detection, this would process the video frame
-                // For now, we'll simulate with manual entry after capturing
-                stopCamera();
-                cameraModal.style.display = "none";
-                
-                // Replace this with actual barcode detection in a real implementation
-                const barcodeInput = prompt("Enter the scanned barcode:", "");
-                if (barcodeInput && barcodeInput.trim() !== "") {
-                    addBarcodeToList(barcodeInput.trim());
-                }
+            // Close scanner
+            $('#close-scanner').on('click', function() {
+                $('#scanner-container').hide();
+                stopScanner();
             });
-            
-            // Function to prompt for manual entry
-            function promptManualEntry() {
-                const barcodeInput = prompt("Enter barcode manually:", "");
-                if (barcodeInput && barcodeInput.trim() !== "") {
-                    addBarcodeToList(barcodeInput.trim());
-                }
+
+            // Function to start the scanner
+            function startScanner() {
+                Quagga.init({
+                    inputStream: {
+                        name: "Live",
+                        type: "LiveStream",
+                        target: document.querySelector('#interactive'),
+                        constraints: {
+                            width: window.innerWidth,
+                            height: window.innerHeight,
+                            facingMode: "environment" // Use rear camera
+                        },
+                    },
+                    locate: true,
+                    locator: {
+                        patchSize: "medium",
+                        halfSample: true
+                    },
+                    numOfWorkers: 4,
+                    frequency: 10,
+                    decoder: {
+                        readers: [
+                            "code_128_reader",
+                            "ean_reader",
+                            "ean_8_reader",
+                            "code_39_reader",
+                            "code_39_vin_reader",
+                            "codabar_reader",
+                            "upc_reader",
+                            "upc_e_reader",
+                            "i2of5_reader"
+                        ],
+                        multiple: false
+                    },
+                    debug: {
+                        drawBoundingBox: false,
+                        showFrequency: false,
+                        drawScanline: true,
+                        showPattern: false
+                    }
+                }, function(err) {
+                    if (err) {
+                        console.error("Quagga initialization failed:", err);
+                        alert("Could not start the scanner: " + err);
+                        $('#scanner-container').hide();
+                        return;
+                    }
+                    
+                    // Scanner is ready
+                    scannerInitialized = true;
+                    $('#scan-status').text('Ready to scan');
+                    
+                    // Start Quagga
+                    Quagga.start();
+                });
+                
+                // When a barcode is detected
+                Quagga.onDetected(function(result) {
+                    var code = result.codeResult.code;
+                    
+                    // Avoid duplicate scans
+                    if (code === lastScannedCode) {
+                        return;
+                    }
+                    
+                    // Set a small timeout before allowing another scan
+                    clearTimeout(scanTimeout);
+                    lastScannedCode = code;
+                    
+                    // Visual feedback
+                    $('#scan-status').text('Detected: ' + code);
+                    showToast('Barcode detected!');
+                    
+                    // Vibrate if possible
+                    if (navigator.vibrate) {
+                        navigator.vibrate(100);
+                    }
+                    
+                    // Play a beep sound
+                    beep();
+                    
+                    // Add to list after a short delay
+                    setTimeout(function() {
+                        // Close scanner
+                        $('#scanner-container').hide();
+                        stopScanner();
+                        
+                        // Add to list
+                        addBarcodeToList(code);
+                        
+                        // Reset
+                        lastScannedCode = '';
+                    }, 500);
+                });
+                
+                // When Quagga processes an image but doesn't detect a barcode
+                Quagga.onProcessed(function(result) {
+                    if (result) {
+                        if (result.boxes) {
+                            // Show "Searching..." when boxes are detected
+                            $('#scan-status').text('Searching for barcode...');
+                        } else {
+                            // No boxes found, show "No barcode detected"
+                            $('#scan-status').text('Position barcode within the frame');
+                        }
+                    }
+                });
             }
             
-            // Function to stop camera stream
-            function stopCamera() {
-                if (cameraStream) {
-                    cameraStream.getTracks().forEach(track => track.stop());
-                    cameraStream = null;
+            // Function to stop the scanner
+            function stopScanner() {
+                if (scannerInitialized) {
+                    Quagga.stop();
+                    scannerInitialized = false;
                 }
             }
             
@@ -401,6 +495,42 @@
                     updateBarcodeTable();
                 } else {
                     alert("This barcode has already been scanned.");
+                }
+            }
+            
+            // Function to prompt for manual entry
+            function promptManualEntry() {
+                const barcodeInput = prompt("Enter barcode manually:", "");
+                if (barcodeInput && barcodeInput.trim() !== "") {
+                    addBarcodeToList(barcodeInput.trim());
+                }
+            }
+            
+            // Function to show toast notification
+            function showToast(message) {
+                $('#toast').text(message).fadeIn();
+                setTimeout(function() {
+                    $('#toast').fadeOut();
+                }, 2000);
+            }
+            
+            // Function to play a beep sound
+            function beep() {
+                try {
+                    const context = new (window.AudioContext || window.webkitAudioContext)();
+                    const oscillator = context.createOscillator();
+                    const gainNode = context.createGain();
+                    
+                    oscillator.type = 'sine';
+                    oscillator.frequency.value = 1800;
+                    oscillator.connect(gainNode);
+                    gainNode.connect(context.destination);
+                    
+                    gainNode.gain.value = 0.1;
+                    oscillator.start(context.currentTime);
+                    oscillator.stop(context.currentTime + 0.1);
+                } catch (e) {
+                    console.log("Beep failed:", e);
                 }
             }
             
