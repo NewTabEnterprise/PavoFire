@@ -714,38 +714,40 @@
                 }
             }
             // Replace your current delete button handler with this one
-            $(document).on('touchstart click', '.delete-button', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
+            $(document).on('click', '.delete-button', function(e) {
+                e.stopImmediatePropagation(); // Stronger than stopPropagation
                 
-                const card = $(this).closest('.barcode-card');
+                // Store references before doing any DOM manipulation
+                const button = $(this);
+                const card = button.closest('.barcode-card');
                 const barcode = card.data('barcode');
                 
-                // Immediate visual feedback that the button was pressed
-                $(this).css('background-color', '#ff3b30');
-                $(this).css('color', 'white');
+                // Immediate visual feedback
+                button.css('background-color', '#ff3b30');
+                button.css('color', 'white');
                 
+                // Find the index in the array
                 const index = scannedBarcodes.findIndex(item => item.barcode === barcode);
                 
                 if (index !== -1) {
                     // Remove from data array
                     scannedBarcodes.splice(index, 1);
                     
-                    // Remove the card more directly
+                    // Use a more direct approach to remove
                     setTimeout(function() {
+                        // Remove directly without animation
                         card.remove();
                         
                         // Show empty state if no barcodes left
-                        if (scannedBarcodes.length === 0) {
+                        if ($('.barcode-card').length === 0) {
                             $('#empty-state').show();
                         }
                         
                         showToast('Barcode removed');
-                    }, 300);
+                    }, 100);
                 }
                 
-                // Prevent any default actions or event bubbling
-                return false;
+                return false; // Prevents event propagation and default behavior
             });
         });
     </script>
