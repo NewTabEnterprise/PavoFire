@@ -658,10 +658,7 @@
                 `;
                 
                 // Add card to the beginning of the cards container
-                $('#barcode-cards').prepend(cardHtml);
-                
-                // Add card to the beginning of the cards container
-                $('#barcode-cards').prepend(cardHtml);                
+                $('#barcode-cards').prepend(cardHtml);         
             }
             
             // Function to update an existing barcode card
@@ -723,6 +720,7 @@
             }
             // Delete card when X button is clicked
             $(document).on('click', '.delete-button', function(e) {
+                console.log('Delete button clicked');
                 e.stopPropagation();  // Prevent event bubbling
                 
                 const card = $(this).closest('.barcode-card');
