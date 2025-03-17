@@ -403,10 +403,6 @@
             background-color: #007aff;
             color: white;
         }
-
-        .edit-modal.show {
-            display: flex;
-        }
         
         @media (max-width: 768px) {
             .barcode-cards-container {
@@ -531,27 +527,6 @@
     <div class="toast" id="toast">Barcode detected!</div>
 
     <script>
-
-        // Add tap event to edit card
-        $(document).on('click', '.barcode-card', function() {
-            const barcode = $(this).data('barcode');
-            const index = scannedBarcodes.findIndex(item => item.barcode === barcode);
-            
-            if (index !== -1) {
-                currentEditIndex = index;
-                
-                // Fill form with current values
-                $('#edit-barcode').val(scannedBarcodes[index].barcode);
-                $('#edit-brand').val(scannedBarcodes[index].brand === 'Not specified' ? '' : scannedBarcodes[index].brand);
-                $('#edit-type').val(scannedBarcodes[index].type === 'Not specified' ? '' : scannedBarcodes[index].type);
-                $('#edit-manufacture-date').val(scannedBarcodes[index].manufactureDate === 'Not specified' ? '' : scannedBarcodes[index].manufactureDate);
-                $('#edit-serial-number').val(scannedBarcodes[index].serialNumber === 'Not specified' ? '' : scannedBarcodes[index].serialNumber);
-                
-                // Show modal
-                $('#edit-modal').css('display', 'flex');
-            }
-        });
-        
         $(document).ready(function() {
             let scannedBarcodes = [];
             let scannerInitialized = false;
@@ -613,71 +588,6 @@
                 // Show confirmation
                 showToast('Barcode updated');
             });
-
-
-            // Set up swipe gestures on barcode cards
-            function setupSwipeHandlers() {
-                // Get all barcode cards and set up Hammer.js on each
-                $('.barcode-card').each(function() {
-                    const card = this;
-                    const hammer = new Hammer(card);
-                    
-                    // Configure horizontal swipe
-                    hammer.get('pan').set({ direction: Hammer.DIRECTION_HORIZONTAL });
-                    
-                    hammer.on('panleft panright panend', function(e) {
-                        if (e.type === 'panright') {
-                            // Swiping right (to delete)
-                            $(card).addClass('swiping');
-                        } else if (e.type === 'panleft') {
-                            // Swiping left (cancel delete)
-                            $(card).removeClass('swiping');
-                        } else if (e.type === 'panend') {
-                            if ($(card).hasClass('swiping')) {
-                                // Complete the delete when swipe ends
-                                const barcode = $(card).data('barcode');
-                                const index = scannedBarcodes.findIndex(item => item.barcode === barcode);
-                                
-                                if (index !== -1) {
-                                    // Remove from data array
-                                    scannedBarcodes.splice(index, 1);
-                                    
-                                    // Animate removal
-                                    $(card).animate({
-                                        opacity: 0,
-                                        height: 0,
-                                        padding: 0,
-                                        margin: 0
-                                    }, 300, function() {
-                                        $(card).remove();
-                                        
-                                        // Show empty state if no barcodes left
-                                        if (scannedBarcodes.length === 0) {
-                                            $('#empty-state').show();
-                                        }
-                                        
-                                        showToast('Barcode removed');
-                                    });
-                                }
-                            } else {
-                                $(card).removeClass('swiping');
-                            }
-                        }
-                    });
-                });
-            }
-            
-            // Function to update an existing barcode card
-            function updateBarcodeCard(index) {
-                const barcodeData = scannedBarcodes[index];
-                const card = $(`.barcode-card[data-barcode="${barcodeData.barcode}"]`);
-                
-                // Update fields
-                card.find('.field-value').eq(0).text(barcodeData.brand);
-                card.find('.field-value').eq(1).text(barcodeData.type);
-                card.find('.field-value').eq(2).text(barcodeData.manufactureDate);
-                card.find('.field-value').eq(3).text(barcodeData.serialNumber);
-            }
 
             // Function to start the scanner
             function startScanner() {
@@ -847,7 +757,7 @@
                 }
             }
             
-           // Function to add a barcode card to the DOM
+            // Function to add a barcode card to the DOM
             function addBarcodeCard(barcodeData) {
                 // Hide empty state if visible
                 $('#empty-state').hide();
@@ -855,53 +765,75 @@
                 // Create card HTML
                 const cardHtml = `
                     <div class="barcode-card" data-barcode="${barcodeData.barcode}">
-                        <div class="card-header">
-                            <div class="barcode-value">${barcodeData.barcode}</div>
-                        </div>
-                        <div class="card-divider"></div>
-                        <div class="card-content">
-                            <div class="card-field">
-                                <div class="field-label">Brand</div>
-                                <div class="field-value">${barcodeData.brand}</div>
-                            </div>
-                            <div class="card-field">
-                                <div class="field-label">Type</div>
-                                <div class="field-value">${barcodeData.type}</div>
-                            </div>
-                            <div class="card-field">
-                                <div class="field-label">Manufacture Date</div>
-                                <div class="field-value">${barcodeData.manufactureDate}</div>
-                            </div>
-                            <div class="card-field">
-                                <div class="field-label">Serial Number</div>
-                                <div class="field-value">${barcodeData.serialNumber}</div>
-                            </div>
-                        </div>
-                    </div>
-                `;
+                        <div class="delete-indicator">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+                                <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0<path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5z"/>
+                <path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1z"/>
+            </svg>
+            Delete
+        </div>
+        <div class="card-header">
+            <div class="barcode-value">${barcodeData.barcode}</div>
+        </div>
+        <div class="card-divider"></div>
+        <div class="card-content">
+            <div class="card-field">
+                <div class="field-label">Brand</div>
+                <div class="field-value">${barcodeData.brand}</div>
+            </div>
+            <div class="card-field">
+                <div class="field-label">Type</div>
+                <div class="field-value">${barcodeData.type}</div>
+            </div>
+            <div class="card-field">
+                <div class="field-label">Manufacture Date</div>
+                <div class="field-value">${barcodeData.manufactureDate}</div>
+            </div>
+            <div class="card-field">
+                <div class="field-label">Serial Number</div>
+                <div class="field-value">${barcodeData.serialNumber}</div>
+            </div>
+        </div>
+    </div>
+`;
                 
                 // Add card to the beginning of the cards container
                 $('#barcode-cards').prepend(cardHtml);
+                
+                // Setup swipe handlers for the new card
                 setupSwipeHandlers();
             }
+            
+            // Function to update an existing barcode card
+            function updateBarcodeCard(index) {
+                const barcodeData = scannedBarcodes[index];
+                const card = $(`.barcode-card[data-barcode="${barcodeData.barcode}"]`);
+                
+                // Update fields
+                card.find('.field-value').eq(0).text(barcodeData.brand);
+                card.find('.field-value').eq(1).text(barcodeData.type);
+                card.find('.field-value').eq(2).text(barcodeData.manufactureDate);
+                card.find('.field-value').eq(3).text(barcodeData.serialNumber);
+            }
+            
             // Function to prompt for manual entry
             function promptManualEntry() {
                 const barcodeInput = prompt("Enter barcode manually:", "");
                 if (barcodeInput && barcodeInput.trim() !== "") {
-                    const barcode = barcodeInput.trim();
-                    
                     // Create product info object
                     let productInfo = {
-                        barcode: barcode,
+                        barcode: barcodeInput.trim(),
                         brand: 'Not specified',
                         manufactureDate: 'Not specified',
                         type: 'Not specified',
                         serialNumber: 'Not specified'
                     };
                     
+                    // Add to list
                     addBarcodeToList(productInfo);
                 }
             }
+            
             // Function to show toast notification
             function showToast(message) {
                 $('#toast').text(message).fadeIn();
@@ -909,6 +841,7 @@
                     $('#toast').fadeOut();
                 }, 2000);
             }
+            
             // Function to play a beep sound
             function beep() {
                 try {
@@ -927,6 +860,85 @@
                 } catch (e) {
                     console.log("Beep failed:", e);
                 }
+            }
+            
+            // Set up tap event to edit card
+            $(document).on('click', '.barcode-card', function(e) {
+                // Prevent triggering if we're in the middle of a swipe
+                if ($(this).hasClass('swiping')) return;
+                
+                const barcode = $(this).data('barcode');
+                const index = scannedBarcodes.findIndex(item => item.barcode === barcode);
+                
+                if (index !== -1) {
+                    currentEditIndex = index;
+                    
+                    // Fill form with current values
+                    $('#edit-barcode').val(scannedBarcodes[index].barcode);
+                    $('#edit-brand').val(scannedBarcodes[index].brand === 'Not specified' ? '' : scannedBarcodes[index].brand);
+                    $('#edit-type').val(scannedBarcodes[index].type === 'Not specified' ? '' : scannedBarcodes[index].type);
+                    $('#edit-manufacture-date').val(scannedBarcodes[index].manufactureDate === 'Not specified' ? '' : scannedBarcodes[index].manufactureDate);
+                    $('#edit-serial-number').val(scannedBarcodes[index].serialNumber === 'Not specified' ? '' : scannedBarcodes[index].serialNumber);
+                    
+                    // Show modal
+                    $('#edit-modal').css('display', 'flex');
+                }
+            });
+            
+            // Set up swipe gesture handlers for barcode cards
+            function setupSwipeHandlers() {
+                // Apply to all barcode cards (including newly added ones)
+                $('.barcode-card:not(.hammer-initialized)').each(function() {
+                    const card = this;
+                    $(card).addClass('hammer-initialized');
+                    
+                    const hammer = new Hammer(card);
+                    
+                    // Configure horizontal swipe
+                    hammer.get('pan').set({ direction: Hammer.DIRECTION_HORIZONTAL });
+                    
+                    hammer.on('panright panend', function(e) {
+                        if (e.type === 'panright') {
+                            // Swiping right (to delete)
+                            $(card).addClass('swiping');
+                        } else if (e.type === 'panend') {
+                            if ($(card).hasClass('swiping')) {
+                                // Complete the delete on swipe end
+                                const barcode = $(card).data('barcode');
+                                const index = scannedBarcodes.findIndex(item => item.barcode === barcode);
+                                
+                                if (index !== -1) {
+                                    // Remove from data array
+                                    scannedBarcodes.splice(index, 1);
+                                    
+                                    // Animate card removal
+                                    $(card).animate({
+                                        opacity: 0,
+                                        height: 0,
+                                        margin: 0,
+                                        padding: 0
+                                    }, 300, function() {
+                                        $(card).remove();
+                                        
+                                        // Show empty state if no barcodes left
+                                        if (scannedBarcodes.length === 0) {
+                                            $('#empty-state').show();
+                                        }
+                                        
+                                        showToast('Barcode removed');
+                                    });
+                                }
+                            } else {
+                                $(card).removeClass('swiping');
+                            }
+                        }
+                    });
+                    
+                    // Handle panleft to cancel deletion
+                    hammer.on('panleft', function() {
+                        $(card).removeClass('swiping');
+                    });
+                });
             }
         });
     </script>
