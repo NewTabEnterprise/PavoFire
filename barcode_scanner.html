@@ -2,10 +2,11 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Barcode Scanner App</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/hammer.js/2.0.8/hammer.min.js"></script>
     <style>
         /* Reset and base styles */
         * {
@@ -21,27 +22,131 @@
             padding: 0;
             max-width: 100%;
             overflow-x: hidden;
+            height: 100vh;
+            position: fixed;
+            left: 0;
+            right: 0;
+            top: 0;
+            bottom: 0;
         }
         
         .container {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
             max-width: 600px;
             margin: 0 auto;
-            padding: 16px;
         }
         
-        h1 {
-            text-align: center;
-            margin-bottom: 20px;
-            color: #333;
-            font-size: 24px;
-            font-weight: 600;
-            display: none; /* Hide heading */
+        /* Card styles */
+        .barcode-cards-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+            padding-bottom: 100px; /* Space for button bar */
+        }
+        
+        .barcode-cards {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .barcode-card {
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            position: relative;
+            transition: transform 0.2s ease, opacity 0.2s ease;
+            touch-action: pan-y;
+        }
+        
+        .barcode-card.swiping {
+            transform: translateX(80px);
+            opacity: 0.7;
+        }
+        
+        .delete-indicator {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #ff3b30;
+            font-size: 16px;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+        
+        .barcode-card.swiping .delete-indicator {
+            opacity: 1;
+        }
+        
+        .card-header {
+            padding: 16px 16px 12px 16px;
+            border-left: 4px solid #007aff;
+        }
+        
+        .barcode-value {
+            font-size: 22px;
+            font-weight: bold;
+            color: #1c1c1e;
+            word-break: break-all;
+            margin-bottom: 4px;
+        }
+        
+        .card-divider {
+            height: 1px;
+            background-color: #e5e5ea;
+            margin: 0 16px;
+        }
+        
+        .card-content {
+            padding: 12px 16px 16px 16px;
+        }
+        
+        .card-field {
+            margin-bottom: 12px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .card-field:last-child {
+            margin-bottom: 0;
+        }
+        
+        .field-label {
+            font-size: 14px;
+            color: #8e8e93;
+            margin-bottom: 4px;
+        }
+        
+        .field-value {
+            font-size: 16px;
+            color: #1c1c1e;
+        }
+        
+        /* Button bar at bottom */
+        .button-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-color: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            display: flex;
+            padding: 16px;
+            box-shadow: 0 -1px 10px rgba(0, 0, 0, 0.1);
+            z-index: 100;
         }
         
         .button-container {
             display: flex;
             gap: 10px;
-            margin-bottom: 20px;
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
         }
         
         .button {
@@ -75,72 +180,6 @@
         
         .manual-button:hover, .manual-button:active {
             background-color: #7a7a7f;
-        }
-        
-        /* Card styles */
-        .barcode-cards {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            margin-top: 20px;
-        }
-        
-        .barcode-card {
-            background-color: white;
-            border-radius: 12px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-            overflow: hidden;
-        }
-        
-        .card-header {
-            padding: 16px 16px 12px 16px;
-            border-left: 4px solid #007aff;
-        }
-        
-        .barcode-value {
-            font-size: 22px;
-            font-weight: bold;
-            color: #1c1c1e;
-            word-break: break-all;
-            margin-bottom: 4px;
-        }
-        
-        .card-divider {
-            height: 1px;
-            background-color: #e5e5ea;
-            margin: 0 16px;
-        }
-        
-        .card-content {
-            padding: 12px 16px 16px 16px;
-        }
-        
-        .card-field {
-            margin-bottom: 12px;
-        }
-        
-        .card-field:last-child {
-            margin-bottom: 0;
-        }
-        
-        .field-label {
-            font-size: 14px;
-            color: #8e8e93;
-            margin-bottom: 4px;
-        }
-        
-        .field-value {
-            font-size: 16px;
-            color: #1c1c1e;
-        }
-        
-        .no-items-msg {
-            text-align: center;
-            padding: 30px 20px;
-            color: #8e8e93;
-            background-color: white;
-            border-radius: 12px;
-            font-style: italic;
         }
 
         /* Scanner container */
@@ -236,7 +275,7 @@
         /* Toast notification */
         .toast {
             position: fixed;
-            bottom: 30px;
+            bottom: 100px;
             left: 50%;
             transform: translateX(-50%);
             background-color: rgba(0, 0, 0, 0.8);
@@ -272,8 +311,101 @@
             color: #8e8e93;
         }
         
+        /* Edit Modal */
+        .edit-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: none;
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .edit-modal-content {
+            width: 90%;
+            max-width: 500px;
+            background-color: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+        }
+        
+        .edit-modal-header {
+            padding: 16px;
+            background-color: #f8f8f8;
+            border-bottom: 1px solid #ddd;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .edit-modal-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .edit-modal-body {
+            padding: 16px;
+        }
+        
+        .edit-form-group {
+            margin-bottom: 16px;
+        }
+        
+        .edit-form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 14px;
+            color: #666;
+        }
+        
+        .edit-form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+        
+        .edit-form-group input:focus {
+            border-color: #007aff;
+            outline: none;
+        }
+        
+        .edit-modal-footer {
+            padding: 12px 16px;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            border-top: 1px solid #ddd;
+        }
+        
+        .edit-modal-button {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        
+        .edit-cancel-button {
+            background-color: #f2f2f7;
+            color: #333;
+        }
+        
+        .edit-save-button {
+            background-color: #007aff;
+            color: white;
+        }
+        
         @media (max-width: 768px) {
-            .container {
+            .barcode-cards-container {
                 padding: 12px;
             }
             
@@ -307,7 +439,30 @@
 </head>
 <body>
     <div class="container">
+        <div class="barcode-cards-container">
+            <div id="barcode-cards" class="barcode-cards">
+                <div class="empty-state" id="empty-state">
+                    <div class="empty-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="currentColor" viewBox="0 0 16 16">
+                            <path d="M1.5 1a.5.5 0 0 0-.5.5v3a.5.5 0 0 1-1 0v-3A1.5 1.5 0 0 1 1.5 0h3a.5.5 0 0 1 0 1h-3zM11 .5a.5.5 0 0 1 .5-.5h3A1.5 1.5 0 0 1 16 1.5v3a.5.5 0 0 1-1 0v-3a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 1-.5-.5zM.5 11a.5.5 0 0 1 .5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 1 0 1h-3A1.5 1.5 0 0 1 0 14.5v-3a.5.5 0 0 1 .5-.5zm15 0a.5.5 0 0 1 .5.5v3a1.5 1.5 0 0 1-1.5 1.5h-3a.5.5 0 0 1 0-1h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 1 .5-.5zM3 4.5a.5.5 0 0 1 1 0v7a.5.5 0 0 1-1 0v-7zm2 0a.5.5 0 0 1 1 0v7a.5.5 0 0 1-1 0v-7zm2 0a.5.5 0 0 1 1 0v7a.5.5 0 0 1-1 0v-7zm2 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-7zm3 0a.5.5 0 0 1 1 0v7a.5.5 0 0 1-1 0v-7z"/>
+                        </svg>
+                    </div>
+                    <div class="empty-text">No barcodes scanned yet</div>
+                    <div class="empty-subtext">Use the buttons below to scan or enter a barcode</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="button-bar">
         <div class="button-container">
+            <button class="button manual-button" id="manual-button">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" style="vertical-align: text-bottom; margin-right: 8px;" viewBox="0 0 16 16">
+                    <path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168l10-10zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207 11.207 2.5zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293l6.5-6.5zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325z"/>
+                </svg>
+                Manual Entry
+            </button>
+            
             <button class="button camera-button" id="camera-button">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" style="vertical-align: text-bottom; margin-right: 8px;" viewBox="0 0 16 16">
                     <path d="M15 12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h1.172a3 3 0 0 0 2.12-.879l.83-.828A1 1 0 0 1 6.827 3h2.344a1 1 0 0 1 .707.293l.828.828A3 3 0 0 0 12.828 5H14a1 1 0 0 1 1 1v6zM2 4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-1.172a2 2 0 0 1-1.414-.586l-.828-.828A2 2 0 0 0 9.172 2H6.828a2 2 0 0 0-1.414.586l-.828.828A2 2 0 0 1 3.172 4H2z"/>
@@ -315,25 +470,6 @@
                 </svg>
                 Scan Barcode
             </button>
-            
-            <button class="button manual-button" id="manual-button">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" style="vertical-align: text-bottom; margin-right: 8px;" viewBox="0 0 16 16">
-                    <path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168l10-10zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207 11.207 2.5zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293l6.5-6.5zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325z"/>
-                </svg>
-                Manual Entry
-            </button>
-        </div>
-        
-        <div id="barcode-cards" class="barcode-cards">
-            <div class="empty-state" id="empty-state">
-                <div class="empty-icon">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="currentColor" viewBox="0 0 16 16">
-                        <path d="M1.5 1a.5.5 0 0 0-.5.5v3a.5.5 0 0 1-1 0v-3A1.5 1.5 0 0 1 1.5 0h3a.5.5 0 0 1 0 1h-3zM11 .5a.5.5 0 0 1 .5-.5h3A1.5 1.5 0 0 1 16 1.5v3a.5.5 0 0 1-1 0v-3a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 1-.5-.5zM.5 11a.5.5 0 0 1 .5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 1 0 1h-3A1.5 1.5 0 0 1 0 14.5v-3a.5.5 0 0 1 .5-.5zm15 0a.5.5 0 0 1 .5.5v3a1.5 1.5 0 0 1-1.5 1.5h-3a.5.5 0 0 1 0-1h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 1 .5-.5zM3 4.5a.5.5 0 0 1 1 0v7a.5.5 0 0 1-1 0v-7zm2 0a.5.5 0 0 1 1 0v7a.5.5 0 0 1-1 0v-7zm2 0a.5.5 0 0 1 1 0v7a.5.5 0 0 1-1 0v-7zm2 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-7zm3 0a.5.5 0 0 1 1 0v7a.5.5 0 0 1-1 0v-7z"/>
-                    </svg>
-                </div>
-                <div class="empty-text">No barcodes scanned yet</div>
-                <div class="empty-subtext">Use the buttons above to scan or enter a barcode</div>
-            </div>
         </div>
     </div>
 
@@ -352,6 +488,41 @@
         </div>
     </div>
 
+    <!-- Edit Modal -->
+    <div class="edit-modal" id="edit-modal">
+        <div class="edit-modal-content">
+            <div class="edit-modal-header">
+                <div class="edit-modal-title">Edit Barcode Details</div>
+                <button id="close-edit-modal" style="background: none; border: none; font-size: 20px; cursor: pointer;">&times;</button>
+            </div>
+            <div class="edit-modal-body">
+                <form id="edit-form">
+                    <input type="hidden" id="edit-barcode" name="barcode">
+                    <div class="edit-form-group">
+                        <label for="edit-brand">Brand</label>
+                        <input type="text" id="edit-brand" name="brand" placeholder="Enter brand">
+                    </div>
+                    <div class="edit-form-group">
+                        <label for="edit-type">Type</label>
+                        <input type="text" id="edit-type" name="type" placeholder="Enter type">
+                    </div>
+                    <div class="edit-form-group">
+                        <label for="edit-manufacture-date">Manufacture Date</label>
+                        <input type="text" id="edit-manufacture-date" name="manufactureDate" placeholder="Enter manufacture date">
+                    </div>
+                    <div class="edit-form-group">
+                        <label for="edit-serial-number">Serial Number</label>
+                        <input type="text" id="edit-serial-number" name="serialNumber" placeholder="Enter serial number">
+                    </div>
+                </form>
+            </div>
+            <div class="edit-modal-footer">
+                <button class="edit-modal-button edit-cancel-button" id="edit-cancel">Cancel</button>
+                <button class="edit-modal-button edit-save-button" id="edit-save">Save</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Toast notification -->
     <div class="toast" id="toast">Barcode detected!</div>
 
@@ -362,6 +533,7 @@
             let lastScannedCode = '';
             let scanTimeout;
             let lastDetection = 0;
+            let currentEditIndex = -1;
             
             // Camera button clicked
             $('#camera-button').on('click', function() {
@@ -382,6 +554,39 @@
             $('#close-scanner').on('click', function() {
                 $('#scanner-container').hide();
                 stopScanner();
+            });
+
+            // Close edit modal
+            $('#close-edit-modal, #edit-cancel').on('click', function() {
+                $('#edit-modal').hide();
+                currentEditIndex = -1;
+            });
+            
+            // Save edited barcode
+            $('#edit-save').on('click', function() {
+                if (currentEditIndex === -1) return;
+                
+                const barcode = $('#edit-barcode').val();
+                const brand = $('#edit-brand').val();
+                const type = $('#edit-type').val();
+                const manufactureDate = $('#edit-manufacture-date').val();
+                const serialNumber = $('#edit-serial-number').val();
+                
+                // Update data
+                scannedBarcodes[currentEditIndex].brand = brand || 'Not specified';
+                scannedBarcodes[currentEditIndex].type = type || 'Not specified';
+                scannedBarcodes[currentEditIndex].manufactureDate = manufactureDate || 'Not specified';
+                scannedBarcodes[currentEditIndex].serialNumber = serialNumber || 'Not specified';
+                
+                // Update UI
+                updateBarcodeCard(currentEditIndex);
+                
+                // Close modal
+                $('#edit-modal').hide();
+                currentEditIndex = -1;
+                
+                // Show confirmation
+                showToast('Barcode updated');
             });
 
             // Function to start the scanner
@@ -539,7 +744,9 @@
             
             // Function to add barcode to list
             function addBarcodeToList(barcodeData) {
-                if (!scannedBarcodes.some(item => item.barcode === barcodeData.barcode)) {
+                const existingIndex = scannedBarcodes.findIndex(item => item.barcode === barcodeData.barcode);
+                
+                if (existingIndex === -1) {
                     // Add to beginning of array so newest is on top
                     scannedBarcodes.unshift(barcodeData);
                     
@@ -558,82 +765,6 @@
                 // Create card HTML
                 const cardHtml = `
                     <div class="barcode-card" data-barcode="${barcodeData.barcode}">
-                        <div class="card-header">
-                            <div class="barcode-value">${barcodeData.barcode}</div>
-                        </div>
-                        <div class="card-divider"></div>
-                        <div class="card-content">
-                            <div class="card-field">
-                                <div class="field-label">Brand</div>
-                                <div class="field-value">${barcodeData.brand}</div>
-                            </div>
-                            <div class="card-field">
-                                <div class="field-label">Type</div>
-                                <div class="field-value">${barcodeData.type}</div>
-                            </div>
-                            <div class="card-field">
-                                <div class="field-label">Manufacture Date</div>
-                                <div class="field-value">${barcodeData.manufactureDate}</div>
-                            </div>
-                            <div class="card-field">
-                                <div class="field-label">Serial Number</div>
-                                <div class="field-value">${barcodeData.serialNumber}</div>
-                            </div>
-                        </div>
-                    </div>
-                `;
-                
-                // Add card to the beginning of the cards container
-                $('#barcode-cards').prepend(cardHtml);
-            }
-            
-            // Function to prompt for manual entry
-            function promptManualEntry() {
-                const barcodeInput = prompt("Enter barcode manually:", "");
-                if (barcodeInput && barcodeInput.trim() !== "") {
-                    const barcode = barcodeInput.trim();
-                    
-                    // Create product info object
-                    let productInfo = {
-                        barcode: barcode,
-                        brand: 'Not specified',
-                        manufactureDate: 'Not specified',
-                        type: 'Not specified',
-                        serialNumber: 'Not specified'
-                    };
-                    
-                    addBarcodeToList(productInfo);
-                }
-            }
-            
-            // Function to show toast notification
-            function showToast(message) {
-                $('#toast').text(message).fadeIn();
-                setTimeout(function() {
-                    $('#toast').fadeOut();
-                }, 2000);
-            }
-            
-            // Function to play a beep sound
-            function beep() {
-                try {
-                    const context = new (window.AudioContext || window.webkitAudioContext)();
-                    const oscillator = context.createOscillator();
-                    const gainNode = context.createGain();
-                    
-                    oscillator.type = 'sine';
-                    oscillator.frequency.value = 1800;
-                    oscillator.connect(gainNode);
-                    gainNode.connect(context.destination);
-                    
-                    gainNode.gain.value = 0.1;
-                    oscillator.start(context.currentTime);
-                    oscillator.stop(context.currentTime + 0.1);
-                } catch (e) {
-                    console.log("Beep failed:", e);
-                }
-            }
-        });
-    </script>
-</body>
-</html>
+                        <div class="delete-indicator">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+                                <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V
