@@ -459,79 +459,59 @@
             function startScanner() {
                 Quagga.init({
                     inputStream: {
-                        name: "Live",
-                        type: "LiveStream",
-                        target: document.querySelector('#interactive'),
-                        constraints: {
-                            width: { min: 640 },
-                            height: { min: 480 },
-                            facingMode: "environment",
-                            aspectRatio: { min: 1, max: 2 }
+                      name: "Live",
+                      type: "LiveStream",
+                      target: document.querySelector('#interactive'),
+                      constraints: {
+                        width: {
+                          min: 1280
                         },
+                        height: {
+                          min: 720
+                        },
+                        facingMode: "environment", // Use rear camera
+                        aspectRatio: {
+                          min: 1,
+                          max: 2
+                        }
+                      },
                     },
                     locate: true,
                     locator: {
-                        patchSize: "medium",
-                        halfSample: true
+                      patchSize: "medium",
+                      halfSample: true
                     },
-                    numOfWorkers: 2, // Reduced for better performance on mobile
-                    frequency: 5,    // Process fewer frames for better accuracy
+                    numOfWorkers: 4,
+                    frequency: 10,
                     decoder: {
-                        readers: [
-                            {
-                                format: "ean_reader",
-                                config: {
-                                    supplements: [
-                                        'ean_5_reader', 'ean_2_reader'
-                                    ]
-                                }
-                            },
-                            {
-                                format: "ean_8_reader",
-                                config: {}
-                            },
-                            {
-                                format: "code_128_reader",
-                                config: {}
-                            },
-                            {
-                                format: "code_39_reader",
-                                config: {}
-                            },
-                            {
-                                format: "upc_reader",
-                                config: {}
-                            }
-                        ],
-                        multiple: false
+                      readers: ["ean_reader", "ean_8_reader", "code_128_reader", "code_39_reader", "code_39_vin_reader", "codabar_reader", "upc_reader", "upc_e_reader", "i2of5_reader"],
+                      multiple: false
                     },
                     debug: {
-                        drawBoundingBox: true,
-                        showFrequency: false,
-                        drawScanline: true,
-                        showPattern: false
+                      drawBoundingBox: true,
+                      showFrequency: false,
+                      drawScanline: true,
+                      showPattern: false
                     },
                     area: {
-                        top: "35%",     // Narrowed scan area for better focus
-                        right: "20%",
-                        left: "20%",
-                        bottom: "35%"
+                      top: "30%",
+                      right: "15%",
+                      left: "15%",
+                      bottom: "30%"
                     }
-                }, function(err) {
+                  }, function(err) {
                     if (err) {
-                        console.error("Quagga initialization failed:", err);
-                        alert("Could not start the scanner: " + err);
-                        $('#scanner-container').hide();
-                        return;
+                      console.error("Quagga initialization failed:", err);
+                      alert("Could not start the scanner: " + err);
+                      $('#scanner-container').hide();
+                      return;
                     }
-                    
                     // Scanner is ready
                     scannerInitialized = true;
                     $('#scan-status').text('Ready to scan');
-                    
                     // Start Quagga
                     Quagga.start();
-                });
+                  });
                 
                 // When a barcode is detected
                 Quagga.onDetected(function(result) {
