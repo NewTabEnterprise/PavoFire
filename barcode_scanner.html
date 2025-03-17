@@ -623,10 +623,13 @@
                 // Hide empty state if visible
                 $('#empty-state').hide();
                 
-                // Create card HTML
+                // Create a unique ID for the card
+                const cardId = 'card-' + Date.now() + '-' + Math.floor(Math.random() * 1000);
+    
+                // Create card HTML with the unique ID
                 const cardHtml = `
-                    <div class="barcode-card" data-barcode="${barcodeData.barcode}">
-                        <div class="delete-button">×</div>
+                    <div class="barcode-card" id="${cardId}" data-barcode="${barcodeData.barcode}">
+                        <button class="delete-button" data-card-id="${cardId}">×</button>
                         <div class="card-header">
                             <div class="barcode-value">${barcodeData.barcode}</div>
                         </div>
@@ -653,7 +656,12 @@
                 `;
                 
                 // Add card to the beginning of the cards container
-                $('#barcode-cards').prepend(cardHtml);         
+                $('#barcode-cards').prepend(cardHtml);
+                
+                // Add click handler directly to this card's delete button
+                $(`#${cardId} .delete-button`).on('click', function() {
+                    deleteCard(cardId, barcodeData.barcode);
+                });       
             }
             
             // Function to update an existing barcode card
@@ -713,42 +721,29 @@
                     console.log("Beep failed:", e);
                 }
             }
-            // Replace your current delete button handler with this one
-            $(document).on('click', '.delete-button', function(e) {
-                e.stopImmediatePropagation(); // Stronger than stopPropagation
+
+            function deleteCard(cardId, barcode) {
+                // Find the card in the DOM
+                const card = $(`#${cardId}`);
                 
-                // Store references before doing any DOM manipulation
-                const button = $(this);
-                const card = button.closest('.barcode-card');
-                const barcode = card.data('barcode');
-                
-                // Immediate visual feedback
-                button.css('background-color', '#ff3b30');
-                button.css('color', 'white');
-                
-                // Find the index in the array
+                // Find the index in the data array
                 const index = scannedBarcodes.findIndex(item => item.barcode === barcode);
                 
                 if (index !== -1) {
                     // Remove from data array
                     scannedBarcodes.splice(index, 1);
                     
-                    // Use a more direct approach to remove
-                    setTimeout(function() {
-                        // Remove directly without animation
-                        card.remove();
-                        
-                        // Show empty state if no barcodes left
-                        if ($('.barcode-card').length === 0) {
-                            $('#empty-state').show();
-                        }
-                        
-                        showToast('Barcode removed');
-                    }, 100);
+                    // Remove the card from DOM
+                    card.remove();
+                    
+                    // Show empty state if no barcodes left
+                    if (scannedBarcodes.length === 0) {
+                        $('#empty-state').show();
+                    }
+                    
+                    showToast('Barcode removed');
                 }
-                
-                return false; // Prevents event propagation and default behavior
-            });
+            }
         });
     </script>
 </body>
