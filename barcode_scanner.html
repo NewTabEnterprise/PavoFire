@@ -63,23 +63,42 @@
             box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
         }
         
-        .add-button {
-            display: block;
-            width: 100%;
+        .button-container {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .button {
+            flex: 1;
             padding: 15px;
-            background-color: #3498db;
-            color: white;
             border: none;
             border-radius: 5px;
             font-size: 16px;
             font-weight: bold;
-            margin-bottom: 20px;
             cursor: pointer;
             transition: background-color 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
         
-        .add-button:hover {
+        .camera-button {
+            background-color: #3498db;
+            color: white;
+        }
+        
+        .camera-button:hover {
             background-color: #2980b9;
+        }
+        
+        .manual-button {
+            background-color: #7f8c8d;
+            color: white;
+        }
+        
+        .manual-button:hover {
+            background-color: #95a5a6;
         }
         
         table {
@@ -116,7 +135,7 @@
             font-style: italic;
         }
 
-        /* Modal Styles */
+        /* Modal for camera viewer */
         .modal {
             display: none;
             position: fixed;
@@ -131,15 +150,24 @@
         .modal-content {
             background-color: #fefefe;
             margin: 15% auto;
-            padding: 20px;
+            padding: 0;
             border-radius: 10px;
-            width: 80%;
-            max-width: 500px;
+            width: 90%;
+            max-width: 600px;
+            overflow: hidden;
+        }
+
+        .modal-header {
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #f8f9fa;
+            border-radius: 10px 10px 0 0;
         }
 
         .close {
             color: #aaa;
-            float: right;
             font-size: 28px;
             font-weight: bold;
             cursor: pointer;
@@ -149,29 +177,38 @@
             color: black;
         }
 
-        /* File input styling */
-        .file-input-container {
-            margin: 20px 0;
+        .modal-body {
+            padding: 0;
+        }
+
+        .modal-footer {
+            padding: 15px;
             text-align: center;
+            background-color: #f8f9fa;
         }
-
-        .custom-file-upload {
+        
+        #camera-preview {
+            width: 100%;
+            height: 300px;
+            object-fit: cover;
+            background-color: #000;
+        }
+        
+        .capture-button {
             display: inline-block;
-            padding: 10px 20px;
+            padding: 12px 25px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: bold;
             cursor: pointer;
-            background-color: #e9ecef;
-            border-radius: 5px;
-            color: #495057;
-            border: 1px solid #ced4da;
-            transition: all 0.3s;
+            transition: background-color 0.3s;
         }
-
-        .custom-file-upload:hover {
-            background-color: #dee2e6;
-        }
-
-        #barcode-file {
-            display: none;
+        
+        .capture-button:hover {
+            background-color: #2980b9;
         }
         
         @media (max-width: 768px) {
@@ -199,6 +236,15 @@
                 width: 95%;
                 margin: 30% auto;
             }
+            
+            .button {
+                padding: 12px 10px;
+                font-size: 14px;
+            }
+            
+            .button svg {
+                margin-right: 5px !important;
+            }
         }
     </style>
 </head>
@@ -206,17 +252,22 @@
     <div class="container">
         <h1>Barcode Scanner</h1>
         
-        <div class="input-group">
-            <label for="barcode-input">Enter Barcode:</label>
-            <input type="text" id="barcode-input" placeholder="Type or paste barcode here" autocomplete="off">
+        <div class="button-container">
+            <button class="button camera-button" id="camera-button">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" style="vertical-align: text-bottom; margin-right: 8px;" viewBox="0 0 16 16">
+                    <path d="M15 12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h1.172a3 3 0 0 0 2.12-.879l.83-.828A1 1 0 0 1 6.827 3h2.344a1 1 0 0 1 .707.293l.828.828A3 3 0 0 0 12.828 5H14a1 1 0 0 1 1 1v6zM2 4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-1.172a2 2 0 0 1-1.414-.586l-.828-.828A2 2 0 0 0 9.172 2H6.828a2 2 0 0 0-1.414.586l-.828.828A2 2 0 0 1 3.172 4H2z"/>
+                    <path d="M8 11a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5zm0 1a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7zM3 6.5a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0z"/>
+                </svg>
+                Scan Barcode
+            </button>
+            
+            <button class="button manual-button" id="manual-button">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" style="vertical-align: text-bottom; margin-right: 8px;" viewBox="0 0 16 16">
+                    <path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168l10-10zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207 11.207 2.5zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293l6.5-6.5zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325z"/>
+                </svg>
+                Manual Entry
+            </button>
         </div>
-        
-        <button class="add-button" id="add-button">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" style="vertical-align: text-bottom; margin-right: 8px;" viewBox="0 0 16 16">
-                <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>
-            </svg>
-            Add Barcode
-        </button>
         
         <div class="table-container">
             <table>
@@ -238,36 +289,19 @@
         </div>
     </div>
 
-    <!-- Modal for camera options -->
-    <div id="options-modal" class="modal">
+    <!-- Camera Modal -->
+    <div id="camera-modal" class="modal">
         <div class="modal-content">
-            <span class="close">&times;</span>
-            <h2 style="margin-bottom: 15px; text-align: center;">Barcode Input Options</h2>
-            
-            <div style="display: flex; flex-direction: column; gap: 15px;">
-                <button id="manual-entry" class="add-button">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" style="vertical-align: text-bottom; margin-right: 8px;" viewBox="0 0 16 16">
-                        <path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168l10-10zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207 11.207 2.5zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293l6.5-6.5zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325z"/>
-                    </svg>
-                    Manual Entry
-                </button>
-                
-                <div id="camera-option" style="display: none;">
-                    <button id="camera-entry" class="add-button">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" style="vertical-align: text-bottom; margin-right: 8px;" viewBox="0 0 16 16">
-                            <path d="M15 12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h1.172a3 3 0 0 0 2.12-.879l.83-.828A1 1 0 0 1 6.827 3h2.344a1 1 0 0 1 .707.293l.828.828A3 3 0 0 0 12.828 5H14a1 1 0 0 1 1 1v6zM2 4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-1.172a2 2 0 0 1-1.414-.586l-.828-.828A2 2 0 0 0 9.172 2H6.828a2 2 0 0 0-1.414.586l-.828.828A2 2 0 0 1 3.172 4H2z"/>
-                            <path d="M8 11a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5zm0 1a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7zM3 6.5a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0z"/>
-                        </svg>
-                        Use Camera
-                    </button>
-                </div>
-                
-                <button id="generate-random" class="add-button" style="background-color: #28a745;">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" style="vertical-align: text-bottom; margin-right: 8px;" viewBox="0 0 16 16">
-                        <path d="M8 3a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 3zm4 8a4 4 0 0 1-8 0 .5.5 0 0 1 1 0 3 3 0 1 0 6 0 .5.5 0 0 1 1 0zm-5.5-5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 0 1h-1a.5.5 0 0 1-.5-.5z"/>
-                    </svg>
-                    Generate Sample Barcode
-                </button>
+            <div class="modal-header">
+                <h3>Scan Barcode</h3>
+                <span class="close" id="close-camera">&times;</span>
+            </div>
+            <div class="modal-body">
+                <video id="camera-preview" autoplay playsinline></video>
+            </div>
+            <div class="modal-footer">
+                <button id="capture-barcode" class="capture-button">Capture</button>
+                <p style="margin-top:10px; font-size:14px; color:#6c757d;">Position the barcode in the center of the screen</p>
             </div>
         </div>
     </div>
@@ -275,122 +309,83 @@
     <script>
         $(document).ready(function() {
             let scannedBarcodes = [];
-            const modal = document.getElementById("options-modal");
-            const closeBtn = document.getElementsByClassName("close")[0];
-            const cameraSupported = 'mediaDevices' in navigator && 'getUserMedia' in navigator.mediaDevices;
+            const cameraModal = document.getElementById("camera-modal");
+            const closeBtn = document.getElementById("close-camera");
+            let cameraStream = null;
             
-            // Show camera option if supported
-            if (cameraSupported) {
-                $("#camera-option").show();
-            }
-            
-            // Open modal when add button is clicked
-            $('#add-button').on('click', function() {
-                modal.style.display = "block";
+            // Camera button clicked
+            $('#camera-button').on('click', function() {
+                // Try to access camera
+                navigator.mediaDevices.getUserMedia({ 
+                    video: { 
+                        facingMode: "environment",
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 }
+                    } 
+                })
+                .then(function(stream) {
+                    cameraStream = stream;
+                    const video = document.getElementById('camera-preview');
+                    video.srcObject = stream;
+                    cameraModal.style.display = "block";
+                })
+                .catch(function(err) {
+                    console.error("Camera error:", err);
+                    alert("Could not access camera. Please ensure camera permissions are granted and try again.");
+                    
+                    // Fall back to manual entry
+                    promptManualEntry();
+                });
             });
             
-            // Close modal when X is clicked
+            // Manual entry button clicked
+            $('#manual-button').on('click', function() {
+                promptManualEntry();
+            });
+            
+            // Close camera modal
             closeBtn.onclick = function() {
-                modal.style.display = "none";
+                stopCamera();
+                cameraModal.style.display = "none";
             };
             
-            // Close modal when clicking outside of it
+            // Close modal when clicking outside
             window.onclick = function(event) {
-                if (event.target == modal) {
-                    modal.style.display = "none";
+                if (event.target == cameraModal) {
+                    stopCamera();
+                    cameraModal.style.display = "none";
                 }
             };
             
-            // Manual entry option
-            $('#manual-entry').on('click', function() {
-                modal.style.display = "none";
-                const barcodeInput = prompt("Enter barcode:", "");
+            // Capture barcode button (simulating a real scan)
+            $('#capture-barcode').on('click', function() {
+                // In a real app with barcode detection, this would process the video frame
+                // For now, we'll simulate with manual entry after capturing
+                stopCamera();
+                cameraModal.style.display = "none";
+                
+                // Replace this with actual barcode detection in a real implementation
+                const barcodeInput = prompt("Enter the scanned barcode:", "");
                 if (barcodeInput && barcodeInput.trim() !== "") {
                     addBarcodeToList(barcodeInput.trim());
                 }
             });
             
-            // Camera entry option (if available)
-            $('#camera-entry').on('click', function() {
-                modal.style.display = "none";
-                
-                // Try to access camera
-                navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
-                    .then(function(stream) {
-                        // Create a video element to show the camera feed
-                        const videoModal = $('<div class="modal" style="display:block;">' +
-                            '<div class="modal-content" style="padding:0; width:90%; max-width:600px;">' +
-                            '<div style="padding:10px; display:flex; justify-content:space-between; align-items:center; background:#f8f9fa; border-radius:10px 10px 0 0;">' +
-                            '<h3>Scan Barcode</h3>' +
-                            '<span class="close" id="close-camera">&times;</span>' +
-                            '</div>' +
-                            '<video id="camera-preview" autoplay playsinline style="width:100%; height:300px; object-fit:cover;"></video>' +
-                            '<div style="padding:15px; text-align:center;">' +
-                            '<button id="capture-barcode" class="add-button" style="margin:0;">Capture</button>' +
-                            '<p style="margin-top:10px; font-size:14px; color:#6c757d;">Position the barcode in the center of the screen</p>' +
-                            '</div>' +
-                            '</div>' +
-                            '</div>');
-                        
-                        $('body').append(videoModal);
-                        
-                        const video = document.getElementById('camera-preview');
-                        video.srcObject = stream;
-                        
-                        // Close camera modal
-                        $('#close-camera').on('click', function() {
-                            stream.getTracks().forEach(track => track.stop());
-                            videoModal.remove();
-                        });
-                        
-                        // Capture button - in a real app, this would analyze the video frame for barcodes
-                        // Here we'll just simulate it with a prompt
-                        $('#capture-barcode').on('click', function() {
-                            stream.getTracks().forEach(track => track.stop());
-                            videoModal.remove();
-                            
-                            // Simulate barcode reading with prompt
-                            const barcodeInput = prompt("Enter the barcode you see (simulating camera capture):", "");
-                            if (barcodeInput && barcodeInput.trim() !== "") {
-                                addBarcodeToList(barcodeInput.trim());
-                            }
-                        });
-                    })
-                    .catch(function(err) {
-                        console.error("Camera error:", err);
-                        alert("Could not access camera. Please ensure camera permissions are granted and try again.");
-                        
-                        // Fall back to manual entry
-                        const barcodeInput = prompt("Enter barcode manually:", "");
-                        if (barcodeInput && barcodeInput.trim() !== "") {
-                            addBarcodeToList(barcodeInput.trim());
-                        }
-                    });
-            });
-            
-            // Generate random barcode option
-            $('#generate-random').on('click', function() {
-                modal.style.display = "none";
-                
-                // Generate a random EAN-13 barcode
-                let randomBarcode = "";
-                for (let i = 0; i < 13; i++) {
-                    randomBarcode += Math.floor(Math.random() * 10);
+            // Function to prompt for manual entry
+            function promptManualEntry() {
+                const barcodeInput = prompt("Enter barcode manually:", "");
+                if (barcodeInput && barcodeInput.trim() !== "") {
+                    addBarcodeToList(barcodeInput.trim());
                 }
-                
-                addBarcodeToList(randomBarcode);
-            });
+            }
             
-            // Handle input field enter key
-            $('#barcode-input').on('keyup', function(e) {
-                if (e.key === 'Enter') {
-                    const barcode = $(this).val().trim();
-                    if (barcode !== "") {
-                        addBarcodeToList(barcode);
-                        $(this).val('');
-                    }
+            // Function to stop camera stream
+            function stopCamera() {
+                if (cameraStream) {
+                    cameraStream.getTracks().forEach(track => track.stop());
+                    cameraStream = null;
                 }
-            });
+            }
             
             // Function to add barcode to list
             function addBarcodeToList(barcode) {
@@ -404,6 +399,8 @@
                     });
                     
                     updateBarcodeTable();
+                } else {
+                    alert("This barcode has already been scanned.");
                 }
             }
             
