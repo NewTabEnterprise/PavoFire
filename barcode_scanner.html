@@ -16,9 +16,9 @@
         }
         
         body {
-            background-color: #f5f5f5;
+            background-color: #f2f2f7;
             color: #333;
-            padding: 20px;
+            padding: 0;
             max-width: 100%;
             overflow-x: hidden;
         }
@@ -26,17 +26,16 @@
         .container {
             max-width: 600px;
             margin: 0 auto;
-            background-color: white;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            padding: 20px;
+            padding: 16px;
         }
         
         h1 {
             text-align: center;
             margin-bottom: 20px;
-            color: #2c3e50;
+            color: #333;
             font-size: 24px;
+            font-weight: 600;
+            display: none; /* Hide heading */
         }
         
         .button-container {
@@ -47,98 +46,100 @@
         
         .button {
             flex: 1;
-            padding: 15px;
+            padding: 16px;
             border: none;
-            border-radius: 5px;
+            border-radius: 10px;
             font-size: 16px;
-            font-weight: bold;
+            font-weight: 600;
             cursor: pointer;
-            transition: background-color 0.3s;
+            transition: background-color 0.2s;
             display: flex;
             align-items: center;
             justify-content: center;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
         }
         
         .camera-button {
-            background-color: #3498db;
+            background-color: #007aff;
             color: white;
         }
         
-        .camera-button:hover {
-            background-color: #2980b9;
+        .camera-button:hover, .camera-button:active {
+            background-color: #0062cc;
         }
         
         .manual-button {
-            background-color: #7f8c8d;
+            background-color: #8e8e93;
             color: white;
         }
         
-        .manual-button:hover {
-            background-color: #95a5a6;
+        .manual-button:hover, .manual-button:active {
+            background-color: #7a7a7f;
         }
         
         /* Card styles */
         .barcode-cards {
             display: flex;
             flex-direction: column;
-            gap: 15px;
+            gap: 12px;
             margin-top: 20px;
         }
         
         .barcode-card {
             background-color: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-            padding: 15px;
-            transition: transform 0.2s;
-            border-left: 4px solid #3498db;
-        }
-        
-        .barcode-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
         }
         
         .card-header {
-            margin-bottom: 12px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid #eee;
+            padding: 16px 16px 12px 16px;
+            border-left: 4px solid #007aff;
         }
         
         .barcode-value {
-            font-size: 18px;
+            font-size: 22px;
             font-weight: bold;
-            color: #2c3e50;
+            color: #1c1c1e;
             word-break: break-all;
+            margin-bottom: 4px;
+        }
+        
+        .card-divider {
+            height: 1px;
+            background-color: #e5e5ea;
+            margin: 0 16px;
         }
         
         .card-content {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
+            padding: 12px 16px 16px 16px;
         }
         
         .card-field {
-            margin-bottom: 8px;
+            margin-bottom: 12px;
+        }
+        
+        .card-field:last-child {
+            margin-bottom: 0;
         }
         
         .field-label {
-            font-size: 12px;
-            color: #7f8c8d;
-            margin-bottom: 2px;
+            font-size: 14px;
+            color: #8e8e93;
+            margin-bottom: 4px;
         }
         
         .field-value {
-            font-size: 14px;
-            color: #2c3e50;
+            font-size: 16px;
+            color: #1c1c1e;
         }
         
         .no-items-msg {
             text-align: center;
             padding: 30px 20px;
-            color: #7f8c8d;
-            background-color: rgba(236, 240, 241, 0.5);
-            border-radius: 8px;
+            color: #8e8e93;
+            background-color: white;
+            border-radius: 12px;
             font-style: italic;
         }
 
@@ -149,7 +150,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0, 0, 0, 0.9);
+            background-color: rgba(0, 0, 0, 0.95);
             z-index: 1000;
             display: none;
         }
@@ -200,8 +201,8 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            width: 70%;
-            height: 20%;
+            width: 280px;
+            height: 100px;
             border: 2px solid rgba(255, 255, 255, 0.5);
             border-radius: 10px;
             pointer-events: none;
@@ -247,80 +248,65 @@
             display: none;
         }
         
-        /* Count badge */
-        .barcode-count {
-            background-color: #3498db;
-            color: white;
-            border-radius: 20px;
-            padding: 4px 10px;
-            font-size: 12px;
-            font-weight: bold;
-            margin-left: 8px;
-            display: inline-block;
-        }
-
         /* Empty state */
         .empty-state {
             text-align: center;
-            padding: 30px 20px;
-            color: #7f8c8d;
+            padding: 60px 20px;
+            color: #8e8e93;
         }
         
         .empty-icon {
             font-size: 48px;
-            margin-bottom: 15px;
-            color: #bdc3c7;
+            margin-bottom: 16px;
+            color: #c7c7cc;
         }
         
         .empty-text {
-            font-size: 16px;
-            margin-bottom: 10px;
+            font-size: 18px;
+            margin-bottom: 8px;
+            color: #3a3a3c;
         }
         
         .empty-subtext {
-            font-size: 14px;
-            color: #95a5a6;
+            font-size: 15px;
+            color: #8e8e93;
         }
         
         @media (max-width: 768px) {
-            h1 {
-                font-size: 20px;
-            }
-            
             .container {
-                padding: 15px;
-                margin: 0;
-                border-radius: 0;
-                box-shadow: none;
-            }
-            
-            body {
-                padding: 0;
+                padding: 12px;
             }
             
             .button {
-                padding: 12px 10px;
-                font-size: 14px;
+                padding: 14px;
+                font-size: 15px;
             }
             
             .button svg {
-                margin-right: 5px !important;
+                margin-right: 6px !important;
             }
 
             .scan-region {
-                width: 90%;
+                width: 280px;
+                height: 100px;
             }
             
-            .card-content {
-                grid-template-columns: 1fr;
+            .barcode-value {
+                font-size: 20px;
+            }
+            
+            .field-label {
+                font-size: 13px;
+            }
+            
+            .field-value {
+                font-size: 15px;
             }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Barcode Scanner <span class="barcode-count" id="barcode-count">0</span></h1>
-        
         <div class="button-container">
             <button class="button camera-button" id="camera-button">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" style="vertical-align: text-bottom; margin-right: 8px;" viewBox="0 0 16 16">
@@ -405,9 +391,10 @@
                         type: "LiveStream",
                         target: document.querySelector('#interactive'),
                         constraints: {
-                            width: window.innerWidth,
-                            height: window.innerHeight,
-                            facingMode: "environment" // Use rear camera
+                            width: { min: 1280 },
+                            height: { min: 720 },
+                            facingMode: "environment", // Use rear camera
+                            aspectRatio: { min: 1, max: 2 }
                         },
                     },
                     locate: true,
@@ -419,9 +406,9 @@
                     frequency: 10,
                     decoder: {
                         readers: [
-                            "code_128_reader",
                             "ean_reader",
                             "ean_8_reader",
+                            "code_128_reader",
                             "code_39_reader",
                             "code_39_vin_reader",
                             "codabar_reader",
@@ -432,10 +419,16 @@
                         multiple: false
                     },
                     debug: {
-                        drawBoundingBox: false,
+                        drawBoundingBox: true,
                         showFrequency: false,
                         drawScanline: true,
                         showPattern: false
+                    },
+                    area: {
+                        top: "30%",
+                        right: "10%",
+                        left: "10%",
+                        bottom: "30%"
                     }
                 }, function(err) {
                     if (err) {
@@ -456,9 +449,25 @@
                 // When a barcode is detected
                 Quagga.onDetected(function(result) {
                     var code = result.codeResult.code;
+                    var format = result.codeResult.format;
+                    
+                    console.log("Detected barcode:", code, "Format:", format);
+                    
+                    // Make sure we have a valid barcode (some basic validation)
+                    if (!code || code.length < 5) {
+                        console.log("Ignoring invalid barcode:", code);
+                        return;
+                    }
                     
                     // Avoid duplicate scans
                     if (code === lastScannedCode) {
+                        return;
+                    }
+                    
+                    // Check confidence level
+                    if (result.codeResult.confidence < 0.75) {
+                        console.log("Low confidence scan:", result.codeResult.confidence);
+                        $('#scan-status').text('Low confidence. Try again.');
                         return;
                     }
                     
@@ -484,8 +493,24 @@
                         $('#scanner-container').hide();
                         stopScanner();
                         
+                        // Determine product info from barcode
+                        let productInfo = {
+                            barcode: code,
+                            brand: '',
+                            manufactureDate: '',
+                            type: '',
+                            serialNumber: ''
+                        };
+                        
+                        // Try to extract known product info
+                        if (code === "9555017600008") {
+                            productInfo.brand = "LION FILE";
+                            productInfo.type = "3\" F4 Lever Arch File";
+                            productInfo.serialNumber = "AFF 403";
+                        }
+                        
                         // Add to list
-                        addBarcodeToList(code);
+                        addBarcodeToList(productInfo);
                         
                         // Reset
                         lastScannedCode = '';
@@ -515,25 +540,13 @@
             }
             
             // Function to add barcode to list
-            function addBarcodeToList(barcode) {
-                if (!scannedBarcodes.some(item => item.barcode === barcode)) {
-                    // Add new barcode data
-                    const newBarcode = {
-                        barcode: barcode,
-                        brand: '',
-                        manufactureDate: '',
-                        type: '',
-                        serialNumber: ''
-                    };
-                    
+            function addBarcodeToList(barcodeData) {
+                if (!scannedBarcodes.some(item => item.barcode === barcodeData.barcode)) {
                     // Add to beginning of array so newest is on top
-                    scannedBarcodes.unshift(newBarcode);
+                    scannedBarcodes.unshift(barcodeData);
                     
                     // Create card and add to DOM
-                    addBarcodeCard(newBarcode);
-                    
-                    // Update count
-                    updateBarcodeCount();
+                    addBarcodeCard(barcodeData);
                 } else {
                     alert("This barcode has already been scanned.");
                 }
@@ -550,18 +563,19 @@
                         <div class="card-header">
                             <div class="barcode-value">${barcodeData.barcode}</div>
                         </div>
+                        <div class="card-divider"></div>
                         <div class="card-content">
                             <div class="card-field">
                                 <div class="field-label">Brand</div>
                                 <div class="field-value">${barcodeData.brand || 'Not specified'}</div>
                             </div>
                             <div class="card-field">
-                                <div class="field-label">Manufacture Date</div>
-                                <div class="field-value">${barcodeData.manufactureDate || 'Not specified'}</div>
-                            </div>
-                            <div class="card-field">
                                 <div class="field-label">Type</div>
                                 <div class="field-value">${barcodeData.type || 'Not specified'}</div>
+                            </div>
+                            <div class="card-field">
+                                <div class="field-label">Manufacture Date</div>
+                                <div class="field-value">${barcodeData.manufactureDate || 'Not specified'}</div>
                             </div>
                             <div class="card-field">
                                 <div class="field-label">Serial Number</div>
@@ -575,16 +589,29 @@
                 $('#barcode-cards').prepend(cardHtml);
             }
             
-            // Function to update the barcode count badge
-            function updateBarcodeCount() {
-                $('#barcode-count').text(scannedBarcodes.length);
-            }
-            
             // Function to prompt for manual entry
             function promptManualEntry() {
                 const barcodeInput = prompt("Enter barcode manually:", "");
                 if (barcodeInput && barcodeInput.trim() !== "") {
-                    addBarcodeToList(barcodeInput.trim());
+                    const barcode = barcodeInput.trim();
+                    
+                    // Create product info object
+                    let productInfo = {
+                        barcode: barcode,
+                        brand: '',
+                        manufactureDate: '',
+                        type: '',
+                        serialNumber: ''
+                    };
+                    
+                    // Try to extract known product info
+                    if (barcode === "9555017600008") {
+                        productInfo.brand = "LION FILE";
+                        productInfo.type = "3\" F4 Lever Arch File";
+                        productInfo.serialNumber = "AFF 403";
+                    }
+                    
+                    addBarcodeToList(productInfo);
                 }
             }
             
