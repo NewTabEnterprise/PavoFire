@@ -713,8 +713,10 @@
                     console.log("Beep failed:", e);
                 }
             }
-            // Ensure this is at the document level for proper delegation
-            $(document).on('click', '.delete-button', function(e) {
+            // Replace your current delete button handler with this one
+            $(document).on('touchstart click', '.delete-button', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
                 
                 const card = $(this).closest('.barcode-card');
                 const barcode = card.data('barcode');
@@ -729,9 +731,9 @@
                     // Remove from data array
                     scannedBarcodes.splice(index, 1);
                     
-                    // Animate card removal
-                    card.fadeOut(300, function() {
-                        $(this).remove();
+                    // Remove the card more directly
+                    setTimeout(function() {
+                        card.remove();
                         
                         // Show empty state if no barcodes left
                         if (scannedBarcodes.length === 0) {
@@ -739,8 +741,11 @@
                         }
                         
                         showToast('Barcode removed');
-                    });
+                    }, 300);
                 }
+                
+                // Prevent any default actions or event bubbling
+                return false;
             });
         });
     </script>
