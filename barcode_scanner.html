@@ -6,7 +6,6 @@
     <title>Barcode Scanner App</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/hammer.js/2.0.8/hammer.min.js"></script>
     <style>
         /* Reset and base styles */
         * {
@@ -311,99 +310,6 @@
             color: #8e8e93;
         }
         
-        /* Edit Modal */
-        .edit-modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: rgba(0, 0, 0, 0.5);
-            display: none;
-            z-index: 1000;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .edit-modal-content {
-            width: 90%;
-            max-width: 500px;
-            background-color: white;
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
-        }
-        
-        .edit-modal-header {
-            padding: 16px;
-            background-color: #f8f8f8;
-            border-bottom: 1px solid #ddd;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .edit-modal-title {
-            font-size: 18px;
-            font-weight: 600;
-            color: #333;
-        }
-        
-        .edit-modal-body {
-            padding: 16px;
-        }
-        
-        .edit-form-group {
-            margin-bottom: 16px;
-        }
-        
-        .edit-form-group label {
-            display: block;
-            margin-bottom: 8px;
-            font-size: 14px;
-            color: #666;
-        }
-        
-        .edit-form-group input {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            font-size: 16px;
-        }
-        
-        .edit-form-group input:focus {
-            border-color: #007aff;
-            outline: none;
-        }
-        
-        .edit-modal-footer {
-            padding: 12px 16px;
-            display: flex;
-            justify-content: flex-end;
-            gap: 10px;
-            border-top: 1px solid #ddd;
-        }
-        
-        .edit-modal-button {
-            padding: 12px 20px;
-            border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-        }
-        
-        .edit-cancel-button {
-            background-color: #f2f2f7;
-            color: #333;
-        }
-        
-        .edit-save-button {
-            background-color: #007aff;
-            color: white;
-        }
-        
         @media (max-width: 768px) {
             .barcode-cards-container {
                 padding: 12px;
@@ -434,6 +340,33 @@
             .field-value {
                 font-size: 15px;
             }
+        }
+        .barcode-card {
+            position: relative;
+        }
+        
+        .delete-button {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 28px;
+            height: 28px;
+            background-color: #f2f2f7;
+            color: #ff3b30;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: bold;
+            cursor: pointer;
+            z-index: 10;
+            line-height: 1;
+        }
+        
+        .delete-button:hover {
+            background-color: #ff3b30;
+            color: white;
         }
     </style>
 </head>
@@ -488,41 +421,6 @@
         </div>
     </div>
 
-    <!-- Edit Modal -->
-    <div class="edit-modal" id="edit-modal">
-        <div class="edit-modal-content">
-            <div class="edit-modal-header">
-                <div class="edit-modal-title">Edit Barcode Details</div>
-                <button id="close-edit-modal" style="background: none; border: none; font-size: 20px; cursor: pointer;">&times;</button>
-            </div>
-            <div class="edit-modal-body">
-                <form id="edit-form">
-                    <input type="hidden" id="edit-barcode" name="barcode">
-                    <div class="edit-form-group">
-                        <label for="edit-brand">Brand</label>
-                        <input type="text" id="edit-brand" name="brand" placeholder="Enter brand">
-                    </div>
-                    <div class="edit-form-group">
-                        <label for="edit-type">Type</label>
-                        <input type="text" id="edit-type" name="type" placeholder="Enter type">
-                    </div>
-                    <div class="edit-form-group">
-                        <label for="edit-manufacture-date">Manufacture Date</label>
-                        <input type="text" id="edit-manufacture-date" name="manufactureDate" placeholder="Enter manufacture date">
-                    </div>
-                    <div class="edit-form-group">
-                        <label for="edit-serial-number">Serial Number</label>
-                        <input type="text" id="edit-serial-number" name="serialNumber" placeholder="Enter serial number">
-                    </div>
-                </form>
-            </div>
-            <div class="edit-modal-footer">
-                <button class="edit-modal-button edit-cancel-button" id="edit-cancel">Cancel</button>
-                <button class="edit-modal-button edit-save-button" id="edit-save">Save</button>
-            </div>
-        </div>
-    </div>
-
     <!-- Toast notification -->
     <div class="toast" id="toast">Barcode detected!</div>
 
@@ -533,7 +431,6 @@
             let lastScannedCode = '';
             let scanTimeout;
             let lastDetection = 0;
-            let currentEditIndex = -1;
             
             // Camera button clicked
             $('#camera-button').on('click', function() {
@@ -556,38 +453,7 @@
                 stopScanner();
             });
 
-            // Close edit modal
-            $('#close-edit-modal, #edit-cancel').on('click', function() {
-                $('#edit-modal').hide();
-                currentEditIndex = -1;
-            });
-            
-            // Save edited barcode
-            $('#edit-save').on('click', function() {
-                if (currentEditIndex === -1) return;
-                
-                const barcode = $('#edit-barcode').val();
-                const brand = $('#edit-brand').val();
-                const type = $('#edit-type').val();
-                const manufactureDate = $('#edit-manufacture-date').val();
-                const serialNumber = $('#edit-serial-number').val();
-                
-                // Update data
-                scannedBarcodes[currentEditIndex].brand = brand || 'Not specified';
-                scannedBarcodes[currentEditIndex].type = type || 'Not specified';
-                scannedBarcodes[currentEditIndex].manufactureDate = manufactureDate || 'Not specified';
-                scannedBarcodes[currentEditIndex].serialNumber = serialNumber || 'Not specified';
-                
-                // Update UI
-                updateBarcodeCard(currentEditIndex);
-                
-                // Close modal
-                $('#edit-modal').hide();
-                currentEditIndex = -1;
-                
-                // Show confirmation
-                showToast('Barcode updated');
-            });
+          
 
             // Function to start the scanner
             function startScanner() {
@@ -765,43 +631,37 @@
                 // Create card HTML
                 const cardHtml = `
                     <div class="barcode-card" data-barcode="${barcodeData.barcode}">
-                        <div class="delete-indicator">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
-                                <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0<path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5z"/>
-                <path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1z"/>
-            </svg>
-            Delete
-        </div>
-        <div class="card-header">
-            <div class="barcode-value">${barcodeData.barcode}</div>
-        </div>
-        <div class="card-divider"></div>
-        <div class="card-content">
-            <div class="card-field">
-                <div class="field-label">Brand</div>
-                <div class="field-value">${barcodeData.brand}</div>
-            </div>
-            <div class="card-field">
-                <div class="field-label">Type</div>
-                <div class="field-value">${barcodeData.type}</div>
-            </div>
-            <div class="card-field">
-                <div class="field-label">Manufacture Date</div>
-                <div class="field-value">${barcodeData.manufactureDate}</div>
-            </div>
-            <div class="card-field">
-                <div class="field-label">Serial Number</div>
-                <div class="field-value">${barcodeData.serialNumber}</div>
-            </div>
-        </div>
-    </div>
-`;
+                        <div class="delete-button">×</div>
+                        <div class="card-header">
+                            <div class="barcode-value">${barcodeData.barcode}</div>
+                        </div>
+                        <div class="card-divider"></div>
+                        <div class="card-content">
+                            <div class="card-field">
+                                <div class="field-label">Brand</div>
+                                <div class="field-value">${barcodeData.brand}</div>
+                            </div>
+                            <div class="card-field">
+                                <div class="field-label">Type</div>
+                                <div class="field-value">${barcodeData.type}</div>
+                            </div>
+                            <div class="card-field">
+                                <div class="field-label">Manufacture Date</div>
+                                <div class="field-value">${barcodeData.manufactureDate}</div>
+                            </div>
+                            <div class="card-field">
+                                <div class="field-label">Serial Number</div>
+                                <div class="field-value">${barcodeData.serialNumber}</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
                 
                 // Add card to the beginning of the cards container
                 $('#barcode-cards').prepend(cardHtml);
                 
-                // Setup swipe handlers for the new card
-                setupSwipeHandlers();
+                // Add card to the beginning of the cards container
+                $('#barcode-cards').prepend(cardHtml);                
             }
             
             // Function to update an existing barcode card
@@ -861,85 +721,36 @@
                     console.log("Beep failed:", e);
                 }
             }
-            
-            // Set up tap event to edit card
-            $(document).on('click', '.barcode-card', function(e) {
-                // Prevent triggering if we're in the middle of a swipe
-                if ($(this).hasClass('swiping')) return;
+            // Delete card when X button is clicked
+            $(document).on('click', '.delete-button', function(e) {
+                e.stopPropagation();  // Prevent event bubbling
                 
-                const barcode = $(this).data('barcode');
+                const card = $(this).closest('.barcode-card');
+                const barcode = card.data('barcode');
                 const index = scannedBarcodes.findIndex(item => item.barcode === barcode);
                 
                 if (index !== -1) {
-                    currentEditIndex = index;
+                    // Remove from data array
+                    scannedBarcodes.splice(index, 1);
                     
-                    // Fill form with current values
-                    $('#edit-barcode').val(scannedBarcodes[index].barcode);
-                    $('#edit-brand').val(scannedBarcodes[index].brand === 'Not specified' ? '' : scannedBarcodes[index].brand);
-                    $('#edit-type').val(scannedBarcodes[index].type === 'Not specified' ? '' : scannedBarcodes[index].type);
-                    $('#edit-manufacture-date').val(scannedBarcodes[index].manufactureDate === 'Not specified' ? '' : scannedBarcodes[index].manufactureDate);
-                    $('#edit-serial-number').val(scannedBarcodes[index].serialNumber === 'Not specified' ? '' : scannedBarcodes[index].serialNumber);
-                    
-                    // Show modal
-                    $('#edit-modal').css('display', 'flex');
+                    // Animate card removal
+                    card.animate({
+                        opacity: 0,
+                        height: 0,
+                        margin: 0,
+                        padding: 0
+                    }, 300, function() {
+                        card.remove();
+                        
+                        // Show empty state if no barcodes left
+                        if (scannedBarcodes.length === 0) {
+                            $('#empty-state').show();
+                        }
+                        
+                        showToast('Barcode removed');
+                    });
                 }
             });
-            
-            // Set up swipe gesture handlers for barcode cards
-            function setupSwipeHandlers() {
-                // Apply to all barcode cards (including newly added ones)
-                $('.barcode-card:not(.hammer-initialized)').each(function() {
-                    const card = this;
-                    $(card).addClass('hammer-initialized');
-                    
-                    const hammer = new Hammer(card);
-                    
-                    // Configure horizontal swipe
-                    hammer.get('pan').set({ direction: Hammer.DIRECTION_HORIZONTAL });
-                    
-                    hammer.on('panright panend', function(e) {
-                        if (e.type === 'panright') {
-                            // Swiping right (to delete)
-                            $(card).addClass('swiping');
-                        } else if (e.type === 'panend') {
-                            if ($(card).hasClass('swiping')) {
-                                // Complete the delete on swipe end
-                                const barcode = $(card).data('barcode');
-                                const index = scannedBarcodes.findIndex(item => item.barcode === barcode);
-                                
-                                if (index !== -1) {
-                                    // Remove from data array
-                                    scannedBarcodes.splice(index, 1);
-                                    
-                                    // Animate card removal
-                                    $(card).animate({
-                                        opacity: 0,
-                                        height: 0,
-                                        margin: 0,
-                                        padding: 0
-                                    }, 300, function() {
-                                        $(card).remove();
-                                        
-                                        // Show empty state if no barcodes left
-                                        if (scannedBarcodes.length === 0) {
-                                            $('#empty-state').show();
-                                        }
-                                        
-                                        showToast('Barcode removed');
-                                    });
-                                }
-                            } else {
-                                $(card).removeClass('swiping');
-                            }
-                        }
-                    });
-                    
-                    // Handle panleft to cancel deletion
-                    hammer.on('panleft', function() {
-                        $(card).removeClass('swiping');
-                    });
-                });
-            }
         });
     </script>
 </body>
