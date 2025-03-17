@@ -39,31 +39,6 @@
             font-size: 24px;
         }
         
-        .input-group {
-            margin-bottom: 20px;
-        }
-        
-        .input-group label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: 500;
-            color: #555;
-        }
-        
-        .input-group input {
-            width: 100%;
-            padding: 12px 15px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            font-size: 16px;
-        }
-        
-        .input-group input:focus {
-            outline: none;
-            border-color: #3498db;
-            box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
-        }
-        
         .button-container {
             display: flex;
             gap: 10px;
@@ -102,37 +77,68 @@
             background-color: #95a5a6;
         }
         
-        table {
-            width: 100%;
-            border-collapse: collapse;
+        /* Card styles */
+        .barcode-cards {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
             margin-top: 20px;
-            table-layout: fixed;
         }
         
-        th, td {
-            padding: 12px 8px;
-            text-align: left;
-            border-bottom: 1px solid #ddd;
+        .barcode-card {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            padding: 15px;
+            transition: transform 0.2s;
+            border-left: 4px solid #3498db;
+        }
+        
+        .barcode-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .card-header {
+            margin-bottom: 12px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .barcode-value {
+            font-size: 18px;
+            font-weight: bold;
+            color: #2c3e50;
+            word-break: break-all;
+        }
+        
+        .card-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        
+        .card-field {
+            margin-bottom: 8px;
+        }
+        
+        .field-label {
+            font-size: 12px;
+            color: #7f8c8d;
+            margin-bottom: 2px;
+        }
+        
+        .field-value {
             font-size: 14px;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
+            color: #2c3e50;
         }
         
-        th {
-            background-color: #f8f9fa;
-            color: #495057;
-            font-weight: 600;
-        }
-        
-        tr:hover {
-            background-color: #f1f1f1;
-        }
-        
-        .no-items {
+        .no-items-msg {
             text-align: center;
-            padding: 20px;
-            color: #6c757d;
+            padding: 30px 20px;
+            color: #7f8c8d;
+            background-color: rgba(236, 240, 241, 0.5);
+            border-radius: 8px;
             font-style: italic;
         }
 
@@ -241,14 +247,44 @@
             display: none;
         }
         
+        /* Count badge */
+        .barcode-count {
+            background-color: #3498db;
+            color: white;
+            border-radius: 20px;
+            padding: 4px 10px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-left: 8px;
+            display: inline-block;
+        }
+
+        /* Empty state */
+        .empty-state {
+            text-align: center;
+            padding: 30px 20px;
+            color: #7f8c8d;
+        }
+        
+        .empty-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+            color: #bdc3c7;
+        }
+        
+        .empty-text {
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+        
+        .empty-subtext {
+            font-size: 14px;
+            color: #95a5a6;
+        }
+        
         @media (max-width: 768px) {
             h1 {
                 font-size: 20px;
-            }
-            
-            th, td {
-                padding: 8px 5px;
-                font-size: 12px;
             }
             
             .container {
@@ -274,12 +310,16 @@
             .scan-region {
                 width: 90%;
             }
+            
+            .card-content {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Barcode Scanner</h1>
+        <h1>Barcode Scanner <span class="barcode-count" id="barcode-count">0</span></h1>
         
         <div class="button-container">
             <button class="button camera-button" id="camera-button">
@@ -298,23 +338,16 @@
             </button>
         </div>
         
-        <div class="table-container">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Barcode</th>
-                        <th>Brand</th>
-                        <th>Manufacture Date</th>
-                        <th>Type</th>
-                        <th>Serial Number</th>
-                    </tr>
-                </thead>
-                <tbody id="barcode-list">
-                    <tr class="no-items">
-                        <td colspan="5">No barcodes added yet</td>
-                    </tr>
-                </tbody>
-            </table>
+        <div id="barcode-cards" class="barcode-cards">
+            <div class="empty-state" id="empty-state">
+                <div class="empty-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M1.5 1a.5.5 0 0 0-.5.5v3a.5.5 0 0 1-1 0v-3A1.5 1.5 0 0 1 1.5 0h3a.5.5 0 0 1 0 1h-3zM11 .5a.5.5 0 0 1 .5-.5h3A1.5 1.5 0 0 1 16 1.5v3a.5.5 0 0 1-1 0v-3a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 1-.5-.5zM.5 11a.5.5 0 0 1 .5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 1 0 1h-3A1.5 1.5 0 0 1 0 14.5v-3a.5.5 0 0 1 .5-.5zm15 0a.5.5 0 0 1 .5.5v3a1.5 1.5 0 0 1-1.5 1.5h-3a.5.5 0 0 1 0-1h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 1 .5-.5zM3 4.5a.5.5 0 0 1 1 0v7a.5.5 0 0 1-1 0v-7zm2 0a.5.5 0 0 1 1 0v7a.5.5 0 0 1-1 0v-7zm2 0a.5.5 0 0 1 1 0v7a.5.5 0 0 1-1 0v-7zm2 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-7zm3 0a.5.5 0 0 1 1 0v7a.5.5 0 0 1-1 0v-7z"/>
+                    </svg>
+                </div>
+                <div class="empty-text">No barcodes scanned yet</div>
+                <div class="empty-subtext">Use the buttons above to scan or enter a barcode</div>
+            </div>
         </div>
     </div>
 
@@ -484,18 +517,67 @@
             // Function to add barcode to list
             function addBarcodeToList(barcode) {
                 if (!scannedBarcodes.some(item => item.barcode === barcode)) {
-                    scannedBarcodes.push({
+                    // Add new barcode data
+                    const newBarcode = {
                         barcode: barcode,
                         brand: '',
                         manufactureDate: '',
                         type: '',
                         serialNumber: ''
-                    });
+                    };
                     
-                    updateBarcodeTable();
+                    // Add to beginning of array so newest is on top
+                    scannedBarcodes.unshift(newBarcode);
+                    
+                    // Create card and add to DOM
+                    addBarcodeCard(newBarcode);
+                    
+                    // Update count
+                    updateBarcodeCount();
                 } else {
                     alert("This barcode has already been scanned.");
                 }
+            }
+            
+            // Function to add a barcode card to the DOM
+            function addBarcodeCard(barcodeData) {
+                // Hide empty state if visible
+                $('#empty-state').hide();
+                
+                // Create card HTML
+                const cardHtml = `
+                    <div class="barcode-card" data-barcode="${barcodeData.barcode}">
+                        <div class="card-header">
+                            <div class="barcode-value">${barcodeData.barcode}</div>
+                        </div>
+                        <div class="card-content">
+                            <div class="card-field">
+                                <div class="field-label">Brand</div>
+                                <div class="field-value">${barcodeData.brand || 'Not specified'}</div>
+                            </div>
+                            <div class="card-field">
+                                <div class="field-label">Manufacture Date</div>
+                                <div class="field-value">${barcodeData.manufactureDate || 'Not specified'}</div>
+                            </div>
+                            <div class="card-field">
+                                <div class="field-label">Type</div>
+                                <div class="field-value">${barcodeData.type || 'Not specified'}</div>
+                            </div>
+                            <div class="card-field">
+                                <div class="field-label">Serial Number</div>
+                                <div class="field-value">${barcodeData.serialNumber || 'Not specified'}</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                // Add card to the beginning of the cards container
+                $('#barcode-cards').prepend(cardHtml);
+            }
+            
+            // Function to update the barcode count badge
+            function updateBarcodeCount() {
+                $('#barcode-count').text(scannedBarcodes.length);
             }
             
             // Function to prompt for manual entry
@@ -532,27 +614,6 @@
                 } catch (e) {
                     console.log("Beep failed:", e);
                 }
-            }
-            
-            // Update the barcode table
-            function updateBarcodeTable() {
-                var tableBody = $('#barcode-list');
-                tableBody.empty();
-                
-                if (scannedBarcodes.length === 0) {
-                    tableBody.append('<tr class="no-items"><td colspan="5">No barcodes added yet</td></tr>');
-                    return;
-                }
-                
-                $.each(scannedBarcodes, function(index, item) {
-                    var row = $('<tr>');
-                    row.append($('<td>').text(item.barcode));
-                    row.append($('<td>').text(item.brand));
-                    row.append($('<td>').text(item.manufactureDate));
-                    row.append($('<td>').text(item.type));
-                    row.append($('<td>').text(item.serialNumber));
-                    tableBody.append(row);
-                });
             }
         });
     </script>
