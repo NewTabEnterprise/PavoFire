@@ -547,7 +547,7 @@
                     }
                     
                     // Check confidence level - increased threshold
-                    if (result.codeResult.confidence < 0.95) {  // Higher confidence threshold
+                    if (result.codeResult.confidence < 0.90) {  // Higher confidence threshold
                         console.log("Low confidence scan:", result.codeResult.confidence);
                         $('#scan-status').text('Low confidence. Try again.');
                         return;
@@ -735,8 +735,6 @@
             }
             // Ensure this is at the document level for proper delegation
             $(document).on('click', '.delete-button', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
                 
                 const card = $(this).closest('.barcode-card');
                 const barcode = card.data('barcode');
