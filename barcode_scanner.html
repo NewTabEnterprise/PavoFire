@@ -368,6 +368,24 @@
             background-color: #ff3b30;
             color: white;
         }
+
+        .barcode-button {
+            background-color: #007aff;
+            color: white;
+        }
+        
+        .barcode-button:hover, .barcode-button:active {
+            background-color: #0062cc;
+        }
+        
+        .qrcode-button {
+            background-color: #5856d6;
+            color: white;
+        }
+        
+        .qrcode-button:hover, .qrcode-button:active {
+            background-color: #4a49b3;
+        }
     </style>
 </head>
 <body>
@@ -396,12 +414,18 @@
                 Manual Entry
             </button>
             
-            <button class="button camera-button" id="camera-button">
+            <button class="button barcode-button" id="barcode-button">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" style="vertical-align: text-bottom; margin-right: 8px;" viewBox="0 0 16 16">
-                    <path d="M15 12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h1.172a3 3 0 0 0 2.12-.879l.83-.828A1 1 0 0 1 6.827 3h2.344a1 1 0 0 1 .707.293l.828.828A3 3 0 0 0 12.828 5H14a1 1 0 0 1 1 1v6zM2 4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-1.172a2 2 0 0 1-1.414-.586l-.828-.828A2 2 0 0 0 9.172 2H6.828a2 2 0 0 0-1.414.586l-.828.828A2 2 0 0 1 3.172 4H2z"/>
-                    <path d="M8 11a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5zm0 1a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7zM3 6.5a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0z"/>
+                    <path d="M1.5 1a.5.5 0 0 0-.5.5v3a.5.5 0 0 1-1 0v-3A1.5 1.5 0 0 1 1.5 0h3a.5.5 0 0 1 0 1h-3zM11 .5a.5.5 0 0 1 .5-.5h3A1.5 1.5 0 0 1 16 1.5v3a.5.5 0 0 1-1 0v-3a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 1-.5-.5zM.5 11a.5.5 0 0 1 .5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 1 0 1h-3A1.5 1.5 0 0 1 0 14.5v-3a.5.5 0 0 1 .5-.5zm15 0a.5.5 0 0 1 .5.5v3a1.5 1.5 0 0 1-1.5 1.5h-3a.5.5 0 0 1 0-1h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 1 .5-.5zM3 4.5a.5.5 0 0 1 1 0v7a.5.5 0 0 1-1 0v-7zm2 0a.5.5 0 0 1 1 0v7a.5.5 0 0 1-1 0v-7zm2 0a.5.5 0 0 1 1 0v7a.5.5 0 0 1-1 0v-7zm2 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-7zm3 0a.5.5 0 0 1 1 0v7a.5.5 0 0 1-1 0v-7z"/>
                 </svg>
-                Scan Barcode
+                Barcode
+            </button>
+            
+            <button class="button qrcode-button" id="qrcode-button">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" style="vertical-align: text-bottom; margin-right: 8px;" viewBox="0 0 16 16">
+                    <path d="M6 0H0v6h6V0ZM5 1H1v4h4V1ZM16 0h-6v6h6V0Zm-5 1h4v4h-4V1ZM6 10H0v6h6v-6Zm-5 1h4v4H1v-4ZM16 10h-6v6h6v-6Zm-5 1h4v4h-4v-4ZM10 4h1v1h-1V4ZM5 4h1v1H5V4ZM10 9h1v1h-1V9ZM5 9h1v1H5V9ZM10 14h1v1h-1v-1ZM5 14h1v1H5v-1ZM8 4h1v1H8V4ZM3 4h1v1H3V4ZM8 9h1v1H8V9ZM3 9h1v1H3V9ZM8 14h1v1H8v-1ZM3 14h1v1H3v-1Z"/>
+                </svg>
+                QR Code
             </button>
         </div>
     </div>
@@ -432,14 +456,33 @@
             let scanTimeout;
             let lastDetection = 0;
             
-            // Camera button clicked
-            $('#camera-button').on('click', function() {
+            // Barcode button clicked (replace your existing camera-button handler)
+            $('#barcode-button').on('click', function() {
                 $('#scanner-container').show();
-                
-                // Set status
-                $('#scan-status').text('Initializing camera...');
-                
-                startScanner();
+                $('#scan-status').text('Initializing barcode scanner...');
+                startBarcodeScanner();
+            });
+
+            $('#qrcode-button').on('click', function() {
+                // First make sure you have the jsQR library loaded
+                if (typeof jsQR !== 'function') {
+                    // If jsQR is not loaded, load it dynamically
+                    const script = document.createElement('script');
+                    script.src = 'https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js';
+                    script.onload = function() {
+                        $('#scanner-container').show();
+                        $('#scan-status').text('Initializing QR code scanner...');
+                        startQRScanner();
+                    };
+                    script.onerror = function() {
+                        alert('Could not load QR code scanner library. Please try again later.');
+                    };
+                    document.head.appendChild(script);
+                } else {
+                    $('#scanner-container').show();
+                    $('#scan-status').text('Initializing QR code scanner...');
+                    startQRScanner();
+                }
             });
             
             // Manual entry button clicked
@@ -456,7 +499,7 @@
           
 
             // Function to start the scanner
-            function startScanner() {
+            function startBarcodeScanner() {
                 Quagga.init({
                     inputStream: {
                       name: "Live",
@@ -604,12 +647,106 @@
                     }
                 });
             }
+
+            // Add a new function for QR code scanning
+            function startQRScanner() {
+                const video = document.createElement("video");
+                const canvasElement = document.createElement("canvas");
+                const canvas = canvasElement.getContext("2d");
+                
+                // Add these elements to the interactive div
+                $('#interactive').empty().append(video).append(canvasElement);
+                canvasElement.style.display = 'none'; // Hide canvas
+                
+                $('#scan-status').text('Looking for QR code...');
+                
+                // Use the device camera
+                navigator.mediaDevices.getUserMedia({ 
+                    video: { 
+                        facingMode: "environment",
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 }
+                    } 
+                }).then(function(stream) {
+                    video.srcObject = stream;
+                    video.setAttribute("playsinline", true); // Required for iOS
+                    video.play();
+                    
+                    // Start scanning for QR codes
+                    requestAnimationFrame(tick);
+                    
+                    function tick() {
+                        if (video.readyState === video.HAVE_ENOUGH_DATA) {
+                            canvasElement.height = video.videoHeight;
+                            canvasElement.width = video.videoWidth;
+                            canvas.drawImage(video, 0, 0, canvasElement.width, canvasElement.height);
+                            const imageData = canvas.getImageData(0, 0, canvasElement.width, canvasElement.height);
+                            
+                            // Scan for QR code
+                            const code = jsQR(imageData.data, imageData.width, imageData.height, {
+                                inversionAttempts: "dontInvert",
+                            });
+                            
+                            if (code) {
+                                // QR code detected
+                                $('#scan-status').text('QR Code detected!');
+                                
+                                // Vibrate if possible
+                                if (navigator.vibrate) {
+                                    navigator.vibrate(100);
+                                }
+                                
+                                // Play a beep sound
+                                beep();
+                                
+                                // Add to list after a short delay
+                                setTimeout(function() {
+                                    // Stop video stream
+                                    video.srcObject.getTracks().forEach(track => track.stop());
+                                    
+                                    // Close scanner
+                                    $('#scanner-container').hide();
+                                    
+                                    // Create product info object
+                                    let productInfo = {
+                                        barcode: code.data,
+                                        brand: 'Not specified',
+                                        manufactureDate: 'Not specified',
+                                        type: 'QR Code',
+                                        serialNumber: 'Not specified'
+                                    };
+                                    
+                                    // Add to list
+                                    addBarcodeToList(productInfo);
+                                }, 500);
+                                
+                                return;
+                            }
+                        }
+                        
+                        // Continue scanning if we're still open
+                        if ($('#scanner-container').is(':visible')) {
+                            requestAnimationFrame(tick);
+                        }
+                    }
+                }).catch(function(err) {
+                    console.error("QR scanner error:", err);
+                    alert("Could not start the QR scanner: " + err);
+                    $('#scanner-container').hide();
+                });
+            }
             
-            // Function to stop the scanner
             function stopScanner() {
+                // Stop 1D barcode scanner if active
                 if (scannerInitialized) {
                     Quagga.stop();
                     scannerInitialized = false;
+                }
+                
+                // Stop QR code scanner if active
+                const videoElement = $('#interactive video').get(0);
+                if (videoElement && videoElement.srcObject) {
+                    videoElement.srcObject.getTracks().forEach(track => track.stop());
                 }
             }
             
