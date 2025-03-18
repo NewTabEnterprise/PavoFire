@@ -752,6 +752,23 @@
                                     
                                     // Play a beep sound
                                     beep();
+
+                                    // Get the QR code content as text
+                                    const qrContent = code.data;
+                                    
+                                    // Extract the serial number using regex pattern matching
+                                    // Looking for patterns like UF012025Y913282 at the beginning of the text or after semicolons
+                                    let serialNumber = qrContent;
+                                    
+                                    // Try to extract using the pattern from your example (UFXXXXXX format)
+                                    const serialMatch = qrContent.match(/UF\d{6}[A-Z]\d{6}/);
+                                    if (serialMatch) {
+                                        serialNumber = serialMatch[0]; // Use the matched serial number
+                                    } else if (qrContent.includes(';')) {
+                                        // If the QR contains semicolons, it may be delimited data
+                                        // Try to get the first part as the serial number
+                                        serialNumber = qrContent.split(';')[0];
+                                    }
                                     
                                     // Add to list after a short delay
                                     setTimeout(function() {
@@ -761,36 +778,12 @@
                                         // Close scanner
                                         $('#scanner-container').hide();
                                         
-                                        // Extract useful information
-                                        let brand = 'Not specified';
-                                        let serialNumber = 'Not specified';
-                                        let type = 'QR Code';
-                                        let manufactureDate = 'Not specified';
-                                        
-                                        // Try to extract serial number from the QR code data
-                                        const serialMatch = code.data.match(/S\/N:\s*([A-Z0-9]+)/);
-                                        if (serialMatch && serialMatch[1]) {
-                                            serialNumber = serialMatch[1];
-                                        }
-                                        
-                                        // Try to extract expiry date
-                                        const dateMatch = code.data.match(/TARIKH LUPUT\s*:\s*(\d{2}\/\d{2}\/\d{4})/);
-                                        if (dateMatch && dateMatch[1]) {
-                                            manufactureDate = 'Expires: ' + dateMatch[1];
-                                        }
-                                        
-                                        // Check if it's from JBDPM
-                                        if (code.data.includes('JABATAN BOMBA DAN PENYELAMAT MALAYSIA')) {
-                                            brand = 'JBDPM';
-                                            type = 'Fire Extinguisher Tag';
-                                        }
-                                        
-                                        // Create product info object
+                                        // Create product info object with the serial number as the primary barcode value
                                         let productInfo = {
                                             barcode: serialNumber,
-                                            brand: brand,
-                                            manufactureDate: manufactureDate,
-                                            type: type,
+                                            brand: 'Not specified',
+                                            manufactureDate: 'Not specified',
+                                            type: 'QR Code',
                                             serialNumber: serialNumber
                                         };
                                         
