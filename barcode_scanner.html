@@ -619,25 +619,12 @@
                 // Example API call (commented out - replace with your actual endpoint)
                 fetch('https://open-sg.larksuite.com/anycross/trigger/callback/MDE1NjdiY2MwYWNlMTE2NzVhZGM2YjE4ODA4OTU2Zjg0', {
                     method: 'POST',
+                    mode: 'no-cors',
                     headers: {
-                        'Content-Type': 'application/json',
-                        'Access-Control-Allow-Origin': '*'
+                        'Content-Type': 'application/json'
                     },
                     body: JSON.stringify(requestData)
                 })
-                .then(response => response.json())
-                .then(data => {
-                    showAlert('Success', 'Your data has been submitted successfully!');
-                    // Optionally clear the scanned barcodes after successful submission
-                    scannedBarcodes = [];
-                    $('#barcode-cards').empty();
-                    $('#empty-state').show();
-                })
-                .catch(error => {
-                    showAlert('Error', 'There was an error submitting your data. Please try again.' + error);
-                    console.error('Error:', error);
-                });
-                
                 
                 // For testing, show a success message
                 showAlert('Testing', 'Submit functionality ready to be connected to your API endpoint.');
