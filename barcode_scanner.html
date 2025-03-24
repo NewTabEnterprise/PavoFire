@@ -429,6 +429,75 @@
         .qrcode-button:hover, .qrcode-button:active {
             background-color: #4a49b3;
         }
+        
+        .button-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-gap: 10px;
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .submit-button {
+            background-color: #28a745;
+            color: white;
+        }
+        
+        .submit-button:hover, .submit-button:active {
+            background-color: #218838;
+        }
+        
+        /* Alert Modal */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: none;
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-content {
+            background-color: white;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 400px;
+            overflow: hidden;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px;
+            background-color: #f8f8f8;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .modal-body {
+            padding: 20px;
+        }
+        
+        .modal-footer {
+            padding: 12px 16px;
+            display: flex;
+            justify-content: flex-end;
+            border-top: 1px solid #ddd;
+        }
+        
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #777;
+        }
     </style>
 </head>
 <body>
@@ -449,7 +518,7 @@
     </div>
     
     <div class="button-bar">
-        <div class="button-container">
+        <div class="button-grid">
             <button class="button manual-button" id="manual-button">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" style="vertical-align: text-bottom; margin-right: 8px;" viewBox="0 0 16 16">
                     <path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168l10-10zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207 11.207 2.5zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293l6.5-6.5zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325z"/>
@@ -469,6 +538,16 @@
                     <path d="M6 0H0v6h6V0ZM5 1H1v4h4V1ZM16 0h-6v6h6V0Zm-5 1h4v4h-4V1ZM6 10H0v6h6v-6Zm-5 1h4v4H1v-4ZM16 10h-6v6h6v-6Zm-5 1h4v4h-4v-4ZM10 4h1v1h-1V4ZM5 4h1v1H5V4ZM10 9h1v1h-1V9ZM5 9h1v1H5V9ZM10 14h1v1h-1v-1ZM5 14h1v1H5v-1ZM8 4h1v1H8V4ZM3 4h1v1H3V4ZM8 9h1v1H8V9ZM3 9h1v1H3V9ZM8 14h1v1H8v-1ZM3 14h1v1H3v-1Z"/>
                 </svg>
                 QR Code
+            </button>
+            
+            <button class="button submit-button" id="submit-button">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" style="vertical-align: text-bottom; margin-right: 8px;" viewBox="0 0 16 16">
+                    <path d="M9 1.5a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-1 0V2a.5.5 0 0 1 .5-.5zm0 4a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-1 0v-1a.5.5 0 0 1 .5-.5z"/>
+                    <path d="M14 9.5a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1 0-1h1a.5.5 0 0 1 .5.5zm0-4a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1 0-1h1a.5.5 0 0 1 .5.5zM6 1h8a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-1.5a.5.5 0 0 1 1 0V13a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1H6a1 1 0 0 0-1 1v1.5a.5.5 0 0 1-1 0V3a2 2 0 0 1 2-2z"/>
+                    <path d="M4.854 4.646a.5.5 0 0 1 0 .708L2.707 8l2.147 2.146a.5.5 0 0 1-.708.708l-2.5-2.5a.5.5 0 0 1 0-.708l2.5-2.5a.5.5 0 0 1 .708 0z"/>
+                    <path d="M3.5 8a.5.5 0 0 1 .5-.5h4a.5.5 0 0 1 0 1H4a.5.5 0 0 1-.5-.5z"/>
+                </svg>
+                Submit
             </button>
         </div>
     </div>
@@ -491,6 +570,22 @@
     <!-- Toast notification -->
     <div class="toast" id="toast">Barcode detected!</div>
 
+    <!-- Alert Modal -->
+    <div class="modal" id="alert-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="alert-title">Alert</h3>
+                <button class="close-modal" id="close-alert">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p id="alert-message">No message provided.</p>
+            </div>
+            <div class="modal-footer">
+                <button class="button" id="alert-ok">OK</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         $(document).ready(function() {
             let scannedBarcodes = [];
@@ -498,6 +593,67 @@
             let lastScannedCode = '';
             let scanTimeout;
             let lastDetection = 0;
+
+            // Submit button functionality
+            $('#submit-button').on('click', function() {
+                // Check if we have any scanned barcodes
+                if (scannedBarcodes.length === 0) {
+                    showAlert('No Data', 'Please scan at least one barcode before submitting.');
+                    return;
+                }
+                
+                // Prepare the data for submission
+                const requestData = {
+                    barcodes: scannedBarcodes.map(item => ({
+                        barcode: item.barcode,
+                        brand: item.brand,
+                        manufactureDate: item.manufactureDate,
+                        type: item.type,
+                        serialNumber: item.serialNumber
+                    }))
+                };
+                
+                // Here you would send the data to your API
+                console.log('Data to submit:', requestData);
+                
+                // Example API call (commented out - replace with your actual endpoint)
+                /*
+                fetch('YOUR_API_ENDPOINT_HERE', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(requestData)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    showAlert('Success', 'Your data has been submitted successfully!');
+                    // Optionally clear the scanned barcodes after successful submission
+                    scannedBarcodes = [];
+                    $('#barcode-cards').empty();
+                    $('#empty-state').show();
+                })
+                .catch(error => {
+                    showAlert('Error', 'There was an error submitting your data. Please try again.');
+                    console.error('Error:', error);
+                });
+                */
+                
+                // For testing, show a success message
+                showAlert('Testing', 'Submit functionality ready to be connected to your API endpoint.');
+            });
+            
+            // Function to show an alert modal
+            function showAlert(title, message) {
+                $('#alert-title').text(title);
+                $('#alert-message').text(message);
+                $('#alert-modal').css('display', 'flex');
+            }
+            
+            // Close alert modal
+            $('#close-alert, #alert-ok').on('click', function() {
+                $('#alert-modal').hide();
+            });
             
             // Barcode button clicked (replace your existing camera-button handler)
             $('#barcode-button').on('click', function() {
